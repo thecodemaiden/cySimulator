@@ -6,8 +6,12 @@ import logging
 class Quadcopter(object):
     def __init__(self, armLength, bodyLength, bodyHeight, motorMass, bodyMass, environment):
         super(Quadcopter, self).__init__()
-        self.logger = logging.getLogger(name='Quadsim.Environment')
+        self.logger = logging.getLogger(name='Quadsim.Quadcopter')
         self.logger.setLevel(logging.DEBUG)
+
+        self.propellerThrustCoefficient = 1e-4
+        self.motorDragCoefficient = 1e-7
+        self.airFrictionCoefficient = 0.25
 
         self.armLength = armLength
         self.bodyLength = float(bodyLength) / 2.0
@@ -20,29 +24,29 @@ class Quadcopter(object):
                   (0, 0, -offset),
                   (-offset, 0, 0)]
 
+        self.armDragDirections = [(1, 0, 0),
+                                  (0, 0, 1),
+                                  (-1, 0, 0),
+                                  (0, 0, -1)]
+
         self.motorMass = motorMass
         self.bodyMass = bodyMass
 
         self.environment = environment
         self.name = "Quad1"
+        x = 198.05
+        self.motorW = [x,x,x,x]
 
         self.makePhysicsBody()
 
     def makePhysicsBody(self):
-       #self.makePhysicsWithJoints()
-        self.makePhysicsOneBody()
-
-    def makePhysicsOneBody(self):
         physicsWorld = self.environment.world
         space = self.environment.space
 
         self.geomList = []
 
         offset = self.armLength + float(self.bodyLength) / 2.0
-        tempOffsets = [(0, offset,0),
-                  (offset, 0, 0),
-                  (0,-offset,0),
-                  (-offset, 0, 0)]
+        
 
         mainBody = ode.Body(physicsWorld)
         bodyMass = ode.Mass()
@@ -71,60 +75,36 @@ class Quadcopter(object):
             g.setRotation((1,0,0,0,0,-1,0,1,0))
             self.geomList += [gt]
 
-
-
-
-
-       
         geom.setRotation((1,0,0,0,0,-1,0,1,0))
-
+        mainBody.setMass(bodyMass)
         self.centerBody = mainBody
 
+   
 
-
-     
-    def makePhysicsWithJoints(self):
-        physicsWorld = self.environment.world
-        space = self.environment.space
-      
-        hubBody = ode.Body(physicsWorld)
-        bodyMass = ode.Mass()
-        bodyMass.setCylinderTotal(self.bodyMass, 3, self.bodyLength, self.bodyHeight)
-        hubBody.setMass(bodyMass)
-
-        geom = ode.GeomCylinder(space, self.bodyLength, self.bodyHeight)
-        geom.setBody(hubBody)
-        #geom.setQuaternion((sqrt(0.5),sqrt(0.5),0,0))
-        geom.setRotation((1,0,0,0,0,-1,0,1,0))
-
-
-        self.centerBody = hubBody
-        self.centerGeom = geom
-
-        # now we add the motors... fun :/
-        self.motorInfo = []
+    def calculatePropDrag(self):
+        drag = [0,0,0,0]
         for i in range(4):
-            body = ode.Body(physicsWorld)
-            mass = ode.Mass()
-            mass.setCylinderTotal(self.motorMass,3, self.motorRadius, self.motorHeight)
-            body.setMass(mass)
-            
-            geom = ode.GeomCylinder(space, self.motorRadius, self.motorHeight)
-            geom.setBody(body)
-            #geom.setQuaternion((sqrt(0.5),sqrt(0.5),0,0))
-            geom.setRotation((1,0,0,0,0,-1,0,1,0))
+            drag[i] = self.motorW[i]*self.motorW[i]*self.motorDragCoefficient
+        return drag
 
-            geom.setPosition(self.armOffsets[i])
-
-            # and the arm joints 
-            #TODO: draw as lines
-            j = ode.FixedJoint(physicsWorld)
-            j.attach(body, hubBody)
-            j.setFixed()
-
-            self.motorInfo.append((body,geom, j))
+    def calculatePropThrust(self):
+        thrust = [0,0,0,0]
+        for i in range(4):
+            thrust[i] = self.motorW[i]*self.motorW[i]*self.propellerThrustCoefficient
+        return thrust
 
     def update(self):
-        # any internal physics updates
-        pass
+        # apply thrust and torque at each prop
+        dr = self.calculatePropDrag()
+        th = self.calculatePropThrust()
+        for i in range(4):
+            dragForce = [0,0,0,0]# [dr[i]*d for d in self.armDragDirections[i]]
+            thrust = [th[i]*d for d in (0,1,0)]
+            totalForces = (dragForce[0]+thrust[0], dragForce[1]+thrust[1], dragForce[2]+thrust[2])
+            self.centerBody.addRelForceAtRelPos(totalForces, self.armOffsets[i])
+        self.logger.debug("Torque on qc: %5.2f, %5.2f, %5.2f" % self.centerBody.getTorque())
+        self.logger.debug("Force on qc: %5.2f, %5.2f, %5.2f" % self.centerBody.getForce())
+
+
+        
 

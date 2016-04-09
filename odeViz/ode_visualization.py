@@ -198,7 +198,7 @@ class ODE_Visualization(VTK_Visualization):
         """ this method searches the space for objects to visualize """
         #for space in self.space:
         space = self.space
-        for i in range(1):
+        for j in range(1):
             for i in range(space.getNumGeoms()):
                 geom = space.getGeom(i)
                 self.addGeom(geom)

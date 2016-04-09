@@ -8,9 +8,8 @@ class MyVisualization(ODE_Visualization):
     def __init__(self, world, space, env, dt):
         super(MyVisualization, self).__init__(world, space, dt)
         self.camera = vtkCamera()
-        #self.camera.SetPosition((0,20,10))
-        self.camera.SetFocalPoint((0,-10,0))
-        self.camera.SetPosition((0.160296845533, -3.65078853769, 30.9784089121))
+        self.camera.SetFocalPoint((0,0,0))
+        self.camera.SetPosition((0.5, 9.65078853769, 80.9784089121))
         self.ren.SetActiveCamera(self.camera)
 
         self.contactGroup = ode.JointGroup()
@@ -31,19 +30,22 @@ class MyVisualization(ODE_Visualization):
 
         # Create contact joints
         for c in contacts:
-            c.setBounce(0.2)
-            c.setMu(5000)
+            c.setBounce(0.1)
+            c.setMu(500)
             j = ode.ContactJoint(self.world, self.contactGroup, c)
             j.attach(geom1.getBody(), geom2.getBody())
 
 
 class Environment(object):
-    def __init__(self, dt=0.1, windowW=1024, windowH=768):
+    def __init__(self, dt=0.05, windowW=1024, windowH=768):
         super(Environment, self).__init__()
         self.world = ode.World()
         self.space = ode.Space()
         self.dt = dt;
+
         self.world.setGravity((0,-9.81,0))
+        self.world.setCFM(1e-2)
+        self.world.setERP(0.5) # seems to make the collision behavior more stable
 
         self.objectList = []
 
@@ -54,27 +56,18 @@ class Environment(object):
         
         self.floor = ode.GeomPlane(self.space, (0, 1, 0), groundY);
 
-        #for collision
-        self.contactGroup = ode.JointGroup()
-
     def addObject(self, obj):
         self.objectList.append(obj)
 
     def start(self):
         self.sim = MyVisualization(self.world, self.space, self, self.dt)
         self.sim.GetProperty(self.floor).SetColor(1.,0,.5)
+        self.sim.GetProperty(self.floor).SetRepresentationToWireframe()
         self.sim.start()
 
     def update(self, dt):
-        q = self.objectList[0]
-        self.logger.debug("---")
-
-        for g in q.geomList:
-            self.logger.debug("\t%2.2f, %2.2f, %2.2f" % g.getPosition())
-
-    
-                
-
+        for o in self.objectList:
+            o.update()
 
 
 

@@ -65,6 +65,7 @@ class ODE_Object():
 
 
 class ODE_Transform(ODE_Object):
+    """ VTK visualization of geom contained in transform geom """
     def __init__(self, geom, innerObj, ident=None):
        self.inner = innerObj
        self.src = self.inner.src;
@@ -78,12 +79,22 @@ class ODE_Transform(ODE_Object):
        self.ident = ident
 
     def getPosition(self):
-         (x1,y1,z1) = self.geom.getPosition()
-         (x2, y2, z2) = self.inner.geomgetPosition()
-         return (x1+x2, y1+y2, z1+z2)
+        parentBody = self.geom.getBody()
+        pr = parentBody.getRotation() #self.geom.getRotation()
+        pr = numpy.matrix(pr).reshape((3,3))
+        pp = parentBody.getPosition()
+        pp = numpy.matrix(pp).reshape((3,1))
+
+        lp = numpy.matrix(self.inner.geomgetPosition()).reshape((3,1))
+        wp = pr*lp
+        wp = wp + pp
+
+        return wp.A1
+
 
     def getRotation(self):
-        R1 = self.geom.getRotation()
+        parentBody = self.geom.getBody()
+        R1 = parentBody.getRotation() #self.geom.getRotation()
         R2 = self.inner.geomgetRotation()
 
         R1 = numpy.matrix(R1).reshape((3,3))
