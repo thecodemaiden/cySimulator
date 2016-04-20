@@ -1,6 +1,7 @@
 from vtk import *
 import ode
-from numpy import sqrt
+from numpy import sqrt, array
+from numpy.linalg import norm
 import logging
 
 class Quadcopter(object):
@@ -9,15 +10,21 @@ class Quadcopter(object):
         self.logger = logging.getLogger(name='Quadsim.Quadcopter')
         self.logger.setLevel(logging.DEBUG)
 
-        self.propellerThrustCoefficient = 1e-4
-        self.motorDragCoefficient = 1e-7
-        self.airFrictionCoefficient = 0.25
+        self.environment = environment
+        ms = self.environment.massScale
+        ls = self.environment.lengthScale
+        fs = self.environment.forceScale
 
-        self.armLength = armLength
-        self.bodyLength = float(bodyLength) / 2.0
-        self.bodyHeight = bodyHeight
-        self.motorHeight = 1.1*bodyHeight
-        self.motorRadius = float(bodyHeight) / 2.0
+
+        self.propellerThrustCoefficient = 1e-4*fs
+        self.motorDragCoefficient = 1e-7*fs
+        self.airFrictionCoefficient = 0.25*fs
+
+        self.armLength = armLength*ls
+        self.bodyLength = ls*float(bodyLength) / 2.0
+        self.bodyHeight = bodyHeight*ls
+        self.motorHeight = 1.2*bodyHeight*ls
+        self.motorRadius = ls*float(bodyHeight) / 2.0
         offset = self.armLength + float(self.bodyLength) / 2.0
         self.armOffsets = [(0, 0, offset),
                   (offset, 0, 0),
@@ -29,15 +36,18 @@ class Quadcopter(object):
                                   (-1, 0, 0),
                                   (0, 0, -1)]
 
-        self.motorMass = motorMass
-        self.bodyMass = bodyMass
+        self.motorMass = motorMass*ms
+        self.bodyMass = bodyMass*ms
 
-        self.environment = environment
         self.name = "Quad1"
         x = 198.05
-        self.motorW = [x,x,x,x]
+        self.motorW = [0,0,0,0]#[x/sqrt(2),x/sqrt(2),x/sqrt(2),x/sqrt(2)]
 
         self.makePhysicsBody()
+        #self.environment.addObject(self)
+
+    def onVisualizationStart(self):
+        pass
 
     def makePhysicsBody(self):
         physicsWorld = self.environment.world
@@ -46,19 +56,15 @@ class Quadcopter(object):
         self.geomList = []
 
         offset = self.armLength + float(self.bodyLength) / 2.0
-        
 
         mainBody = ode.Body(physicsWorld)
         bodyMass = ode.Mass()
         bodyMass.setCylinderTotal(self.bodyMass, 3, self.bodyLength, self.bodyHeight)
         
-        geom = ode.GeomCylinder(None, self.bodyLength, self.bodyHeight)
-        #geom.setBody(mainBody)
-        gt = ode.GeomTransform(space)
-        gt.setBody(mainBody)
-        gt.setGeom(geom)
-        geom.setRotation((1,0,0,0,0,-1,0,1,0))
-        self.geomList.append(gt)
+        geom = ode.GeomCylinder(space, self.bodyLength, self.bodyHeight)
+        geom.setBody(mainBody)    
+        geom.setOffsetRotation((1,0,0,0,0,-1,0,1,0))
+        self.geomList.append(geom)
 
         for i in range(4):
             mass = ode.Mass()
@@ -66,20 +72,16 @@ class Quadcopter(object):
             mass.translate(self.armOffsets[i])
             bodyMass.add(mass)
 
-            g = ode.GeomCylinder(None, self.motorRadius, self.motorHeight)
-            gt = ode.GeomTransform(space)
-            gt.setGeom(g)
-            gt.setBody(mainBody)
+            g = ode.GeomCylinder(space, self.motorRadius, self.motorHeight)
+            g.setBody(mainBody)
 
-            g.setPosition(self.armOffsets[i])
-            g.setRotation((1,0,0,0,0,-1,0,1,0))
-            self.geomList += [gt]
+            g.setOffsetPosition(self.armOffsets[i])
+            g.setOffsetRotation((1,0,0,0,0,-1,0,1,0))
 
-        geom.setRotation((1,0,0,0,0,-1,0,1,0))
+            self.geomList += [g]
+
         mainBody.setMass(bodyMass)
         self.centerBody = mainBody
-
-   
 
     def calculatePropDrag(self):
         drag = [0,0,0,0]
@@ -98,12 +100,17 @@ class Quadcopter(object):
         dr = self.calculatePropDrag()
         th = self.calculatePropThrust()
         for i in range(4):
-            dragForce = [0,0,0,0]# [dr[i]*d for d in self.armDragDirections[i]]
+            dragForce =  [dr[i]*d for d in self.armDragDirections[i]]
             thrust = [th[i]*d for d in (0,1,0)]
             totalForces = (dragForce[0]+thrust[0], dragForce[1]+thrust[1], dragForce[2]+thrust[2])
             self.centerBody.addRelForceAtRelPos(totalForces, self.armOffsets[i])
-        self.logger.debug("Torque on qc: %5.2f, %5.2f, %5.2f" % self.centerBody.getTorque())
-        self.logger.debug("Force on qc: %5.2f, %5.2f, %5.2f" % self.centerBody.getForce())
+        
+        # finally, the air drag force - turns out we need it to hover!
+        v = self.centerBody.getLinearVel()
+        vMag = norm(v)
+        airFriction = (array(v)*-self.airFrictionCoefficient*vMag)
+        self.centerBody.addForce(airFriction)
+       
 
 
         

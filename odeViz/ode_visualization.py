@@ -208,7 +208,7 @@ class ODE_Visualization(VTK_Visualization):
         self.iren.Initialize()
 
         self.iren.AddObserver('TimerEvent', self.execute)
-        self.iren.CreateRepeatingTimer(10)
+        self.iren.CreateRepeatingTimer(int(1000*self.dt))
 
         self.timeStart = time()
         self.iren.Start()
