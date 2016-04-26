@@ -8,13 +8,13 @@ import vtk
 from random import choice
 
 class RF24Strength(Field):
-        def __init__(self, world, granularity=10.0):
+        def __init__(self, world, granularity=5.0):
             super(RF24Strength, self).__init__('RF24Strength', 1e-10, granularity)
             self.world = world
             worldSize = np.array([world.xLength/granularity, world.yLength/granularity, world.zLength/granularity], dtype=int)
             self.values  = np.full(worldSize, self.steadyStateValue)
             self.world.addField(self)
-            hotMap = np.array([[0.3333,         0,         0],
+            hotMap = np.array(   [[0.3333,         0,         0],
                                   [0.6667,         0,         0],
                                   [1.0000,         0,         0],      
                                   [1.0000,    0.3333,         0],
@@ -133,7 +133,6 @@ class DrawingWorld(World):
         self.renderWindow.AddRenderer(self.renderer)
         self.iren = vtk.vtkRenderWindowInteractor()
         self.iren.SetRenderWindow(self.renderWindow)
-        
 
         self.startTime = time()
 
@@ -153,7 +152,6 @@ class DrawingWorld(World):
         self.renderWindow.Render()
         #if time() > self.startTime + 10:
         #   self.iren.TerminateApp()
-
 
 
 w = DrawingWorld(200,200, 100)

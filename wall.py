@@ -23,7 +23,7 @@ class Wall(object):
         p.EdgeVisibilityOn()
        
 
-    def update(self):
+    def update(self, dt):
         pass
 
     @classmethod

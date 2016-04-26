@@ -1,6 +1,9 @@
 #!/usr/bin/python2
 from random import uniform
 from common import Point3d
+import logging
+
+#TODO: print logs
 
 class MobileObject(object):
     def __init__(self, **kwargs):
@@ -42,7 +45,7 @@ class MobileObject(object):
 
         self.pos = Point3d(newX, newY, newZ)
            
-        print("[{}]\tpos: {:5.2f},{:5.2f},{:5.2f}\tdest: {:5.2f},{:5.2f},{:5.2f}".format(self.name, *(self.pos + self.dest)))
+        #print("[{}]\tpos: {:5.2f},{:5.2f},{:5.2f}\tdest: {:5.2f},{:5.2f},{:5.2f}".format(self.name, *(self.pos + self.dest)))
 
         if self.v == (0,0,0):
             self.changeDest()
@@ -53,7 +56,7 @@ class MobileObject(object):
         destY = uniform(-self.world.yLength/2,self.world.yLength/2)
         destZ = uniform(-self.world.zLength/2,self.world.zLength/2)
 
-        moveV = uniform(2, 10)
+        moveV = uniform(20, 100)
         Vx = (destX -self.pos.x)/moveV
         Vy = (destY -self.pos.y)/moveV
         Vz = (destZ -self.pos.z)/moveV

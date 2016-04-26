@@ -42,7 +42,7 @@ class MyVisualization(ODE_Visualization):
 
         # Create contact joints
         for c in contacts:
-            c.setBounce(0.1)
+            c.setBounce(0.7)
             c.setMu(500)
             j = ode.ContactJoint(self.world, self.contactGroup, c)
             j.attach(geom1.getBody(), geom2.getBody())
@@ -91,7 +91,7 @@ class Environment(object):
 
     def update(self, dt):
         for o in self.objectList:
-            o.update()
+            o.update(dt)
 
 
 
