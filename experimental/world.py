@@ -23,8 +23,8 @@ class World(object):
                 e.addObject(o)
         self.entityList.add(o) # does nothing if already added
 
-    def update(self):
+    def update(self,dt):
         for f in self.fieldList:
-            f.update()
+            f.update(dt)
         for o in self.entityList:
-            o.update()
+            o.update(dt)

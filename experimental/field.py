@@ -36,28 +36,12 @@ class Field(object):
         """ Return current value of field (can be vector, scalar, other) """
         return 0.0    
 
-    def combineValuesAtPoint(self, pt, v1, v2):
+    def combineValuesAtPoint(self, pt, values):
         """ Combine two overlapping values """
-        #TODO: can we extend to more than 2? 
-        return v1+v2
+        return sum(values)
 
-    def spreadValueAtPoint(self, pt, oldNeighbors):
-        """ return 9 values to be applied:
-                [(x-1, y-1),  (x, y-1),  (x+1, y-1)
-                 (x-1, y),     ( pt ),   (x+1, y)
-                 (x-1, y+1),  (x, y+1),  (x+1, y+1)]  
-            oldNeighbors is given in the same format """
-        return oldNeighbors
-
-    def update(self):
-        startX = None
-        startY = None
-        endX = None
-        endY = None
-
-        for o in self.objectList:
-            pt1 = o.influencingRegion()
-            pt2 = o.influencedByRegion()
+    def update(self,dt):
+        pass
 
     def addObject(self, o):
         self.objectList.append(o)

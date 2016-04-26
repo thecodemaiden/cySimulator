@@ -6,6 +6,7 @@ from time import time
 import numpy as np
 import vtk
 from random import choice
+from scipy.ndimage.filters import convolve
 
 class RF24Strength(Field):
         def __init__(self, world, granularity=5.0):
@@ -14,29 +15,84 @@ class RF24Strength(Field):
             worldSize = np.array([world.xLength/granularity, world.yLength/granularity, world.zLength/granularity], dtype=int)
             self.values  = np.full(worldSize, self.steadyStateValue)
             self.world.addField(self)
-            hotMap = np.array(   [[0.3333,         0,         0],
-                                  [0.6667,         0,         0],
-                                  [1.0000,         0,         0],      
-                                  [1.0000,    0.3333,         0],
-                                  [1.0000,    0.6667,         0],
-                                  [1.0000,    1.0000,         0],
-                                  [1.0000,    1.0000,    0.2500],
-                                  [1.0000,    1.0000,    0.5000],
-                                  [1.0000,    1.0000,    0.7500],
-                                  [1.0000,    1.0000,    1.0000]])
-            self.heatMapValues = np.array(hotMap*255, dtype='u1')
+            self.heatMapValues = np.array( [[36,    0,    0],
+                                [73,    0,    0],
+                                [109,    0,    0],
+                                [146,    0,    0],
+                                [182,    0,    0],
+                                [219,    0,    0],
+                                [255,    0,    0],
+                                [255,   36,    0],
+                                [255,   73,    0],
+                                [255,  109,    0],
+                                [255,  146,    0],
+                                [255,  182,    0],
+                                [255,  219,    0],
+                                [255,  255,    0],
+                                [255,  255,   43],
+                                [255,  255,   85],
+                                [255,  255,  128],
+                                [255,  255,  170],
+                                [255,  255,  213],
+                                [255,  255,  255]], dtype='u1')
             self.maxValue = self.minValue = self.steadyStateValue
             self.setupDraw()
+           
+        def dissipateFieldValues(self, dt):
+            # take the old field values and dissipate them to the neighboring regions
+            # to take dt into account, think of dissipation strength as the time constant
+            dissipationStrength = 20 # very low value for TESTING - at time t+this, it will be at 37% strength
+            nNeighbors = 27 #
+            kernel = np.full((3,3,3), 1.0)
+            newField = convolve(self.values, kernel, mode='constant') # get the sum of neighbouring values
+            newField = newField/nNeighbors * np.exp(-dt/dissipationStrength) 
 
-        def update(self):
-            super(RF24Strength, self).update()
+            self.values = newField
+
+
+        def updateFieldValues(self, dt):
+            # first, create a new field by dissipating the old values
+            #self.dissipateFieldValues(dt)
+            # then, add in the values from the radiating objects
+            # TODO: all coordinates of first point must be less than or equal to values in second point
+            originOffset = np.array([self.world.xLength/2, self.world.yLength/2, self.world.zLength/2])
+            originOffset += self.gran
+            for o in self.objectList:
+                region = np.array(o.influencingRegion())
+                
+                # find the cells we need to look at
+                cellRegion = np.array((region+originOffset)/self.gran, dtype='int32')
+               
+                if 0:
+                    # TODO: can we ask clients to provide a convolution matrix?
+                    # TODO: a single cell will not get anything done!
+                    for cx in range(cellRegion[0,0], cellRegion[1,0]):
+                        for cy in range(cellRegion[0,1], cellRegion[1,1]):
+                            for cz in range(cellRegion[0,2], cellRegion[1,2]):
+                                v = o.transformFieldValueAtPoint(self.values[cx,cy,cz], (cx,cy,cz))
+                                self.values[cx,cy,cz] += v
+                else:
+                    # XXX: A HACK
+                    v = o.transformFieldValueAtPoint(0, (0,0,0))
+                    self.values[cellRegion[0,0]:cellRegion[1,0], cellRegion[0,1]:cellRegion[1,1],cellRegion[0,2]:cellRegion[1,2]] += v
+
+
+        def update(self, dt):
+            super(RF24Strength, self).update(dt)
+            self.updateFieldValues(dt)
+
+            logValues = np.log(self.values)
+
+            self.maxValue = np.max(logValues)
+            self.minValue = np.min(logValues)
+
             # assign colors to points
             colors = vtk.vtkUnsignedCharArray()
             colors.SetNumberOfComponents(3)
             colors.SetName('Colors')
-            for v in np.nditer(self.values):
+            for v in np.nditer(logValues):
                 #choose a random color for testing
-                c = choice(self.heatMapValues)
+                c = self.getHeatMapColor(v)
                 colors.InsertNextTuple3(*c)
 
             #self.pointData.GetPointData().AddArray(colors)
@@ -76,8 +132,13 @@ class RF24Strength(Field):
             props.SetOpacity(0.1)
 
         def getHeatMapColor(self, v):
-            idx = (v - self.minValue)/(self.maxValue-self.minValue)
-            idx = int(idx*len(self.heatMapValues))
+            if (self.maxValue == self.minValue):
+                idx = 0.5
+            else:
+                idx = (v - self.minValue)/(self.maxValue-self.minValue)
+            idx = int(idx*(len(self.heatMapValues)-1))
+            if idx < 15:
+                idx = 0
             return self.heatMapValues[idx]
 
 
@@ -90,6 +151,7 @@ class MobileRFObject(MobileObject, FieldObject):
         self.boundaryStart = (self.pos.x-self.size[0]/2, self.pos.y-self.size[1]/2, self.pos.z-self.size[2]/2)
         self.boundaryEnd = (self.pos.x+self.size[0]/2, self.pos.y+self.size[1]/2, self.pos.z+self.size[2]/2)
         self.setupDraw()
+        self.emissionStrength = 200
         
     def setupDraw(self):
         cube = vtk.vtkCubeSource()
@@ -103,7 +165,8 @@ class MobileRFObject(MobileObject, FieldObject):
 
         self.actor = vtk.vtkActor()
         self.actor.SetMapper(mapper)
-        self.actor.GetProperty().SetColor((0,0,1.0))
+        self.actor.GetProperty().SetColor((1.0,1.0,1.0))
+        self.actor.GetProperty().SetRepresentationToWireframe()
 
     def influencingRegion(self):
         """ Returns two points that define a bounding box for the direct influence of the object"""
@@ -115,17 +178,19 @@ class MobileRFObject(MobileObject, FieldObject):
         # let's only care about field value at our center, a single point
         return [self.pos, self.pos]
     
-    def transformFieldValueAtPoint(oldVal, pt):
+    def transformFieldValueAtPoint(self, oldVal, pt):
         """ Modify the field value at the point (add, subtract) if needed """
-        return oldVal
+        return self.emissionStrength
 
-    def update(self):
-        self.position_update()
+    def update(self, dt):
+        self.position_update(dt)
+        self.boundaryStart = (self.pos.x-self.size[0]/2, self.pos.y-self.size[1]/2, self.pos.z-self.size[2]/2)
+        self.boundaryEnd = (self.pos.x+self.size[0]/2, self.pos.y+self.size[1]/2, self.pos.z+self.size[2]/2)
         self.actor.SetPosition(*self.pos)
         # use influence of field
 
 class DrawingWorld(World):
-    def __init__(self, xLength, yLength, zLength):
+    def __init__(self, xLength, yLength, zLength, dt=0.1):
         super(DrawingWorld, self).__init__(xLength, yLength, zLength)
         self.renderer = vtk.vtkRenderer()
         self.renderWindow = vtk.vtkRenderWindow()
@@ -133,6 +198,7 @@ class DrawingWorld(World):
         self.renderWindow.AddRenderer(self.renderer)
         self.iren = vtk.vtkRenderWindowInteractor()
         self.iren.SetRenderWindow(self.renderWindow)
+        self.dt = dt
 
         self.startTime = time()
 
@@ -148,7 +214,7 @@ class DrawingWorld(World):
         self.renderer.AddActor(a)
 
     def update(self, event, obj):
-        super(DrawingWorld, self).update()
+        super(DrawingWorld, self).update(self.dt)
         self.renderWindow.Render()
         #if time() > self.startTime + 10:
         #   self.iren.TerminateApp()
@@ -163,5 +229,6 @@ m2 = MobileRFObject(world=w, name="zippy2", size=[10,10,10])
 w.addActor(m1.actor)
 w.addActor(m2.actor)
 
-w.registerToField(m1, 'RFStrength')
+w.registerToField(m1, 'RF24Strength')
+w.registerToField(m2, 'RF24Strength')
 w.startDrawing()

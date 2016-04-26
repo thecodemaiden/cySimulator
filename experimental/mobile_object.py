@@ -19,7 +19,7 @@ class MobileObject(object):
 
         self.world.addEntity(self)
 
-    def position_update(self):
+    def position_update(self, dt):
         togoX = self.dest.x - self.pos.x
         togoY = self.dest.y - self.pos.y
         togoZ = self.dest.z - self.pos.z
