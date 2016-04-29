@@ -1,4 +1,5 @@
 #!/usr/bin/python2
+import numpy as np
 
 class FieldObject(object):
     """ An object that is influences or influences a field in its area """
@@ -19,6 +20,45 @@ class FieldObject(object):
         """ Modify the field value at the point (add, subtract) if needed """
         return oldVal
 
+    def getRadiatedValue(self):
+        return 0
+
+class FieldInfluence(object):
+    def __init__(self, center, radius, magnitude):
+        self.center = tuple(center)
+        self.r = radius
+        self.mag = magnitude
+
+class SphereField(object):
+    """ TODO: document me! """
+    def __init__(self, name, spreadVector, stopValue=1e-1):
+        ''' spread is [vel, mag_factor] '''
+        super(SphereField, self).__init__()
+        self.name = name
+        self.objectList = set()
+        self.stopValue = stopValue
+        self.spread = spreadVector
+        self.sphereList = [] # store center, radius, mag
+        self.initialRadius = 0 # wut
+
+    def addObject(self, o):
+        self.objectList.add(o)
+
+    def update(self, dt):
+        # spread exisiting spheres
+        newList = []
+        for s in self.sphereList:
+            newMag = s.mag * np.exp(-dt/self.spread[1])
+            if newMag > self.stopValue:
+                newR = s.r + self.spread[0]*dt
+                newList.append(FieldInfluence(s.center, newR, newMag))
+        self.sphereList = newList
+
+        # add new ones
+        for o in self.objectList:
+            v = o.getRadiatedValue()
+            p = o.pos
+            self.sphereList.append(FieldInfluence(p, self.initialRadius, v))
 
 class Field(object):
     """ TODO: document """

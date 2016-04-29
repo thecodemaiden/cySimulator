@@ -28,3 +28,46 @@ class World(object):
             f.update(dt)
         for o in self.entityList:
             o.update(dt)
+
+import vtk
+class DrawingWorld(World):
+    def __init__(self, xLength, yLength, zLength, dt=0.1):
+        super(DrawingWorld, self).__init__(xLength, yLength, zLength)
+        self.renderer = vtk.vtkRenderer()
+        self.renderWindow = vtk.vtkRenderWindow()
+        self.renderWindow.SetSize(800,600)
+        self.renderWindow.AddRenderer(self.renderer)
+        self.iren = vtk.vtkRenderWindowInteractor()
+        self.iren.SetRenderWindow(self.renderWindow)
+
+        self.actor = vtk.vtkCubeAxesActor()
+        self.actor.SetCamera(self.renderer.GetActiveCamera())
+        self.actor.SetBounds(-xLength/2, xLength/2, -yLength/2, yLength/2, -zLength/2, zLength/2)
+        self.actor.DrawXGridlinesOn()
+        self.actor.DrawYGridlinesOn()
+        self.actor.DrawZGridlinesOn()
+
+        self.renderer.AddActor(self.actor)
+
+        self.dt = dt
+
+    def startDrawing(self):
+        self.iren.Initialize()
+
+        self.iren.AddObserver('TimerEvent', self.update)
+        self.iren.CreateRepeatingTimer(100)
+
+        self.iren.Start()
+
+    def addActor(self, a):
+        self.renderer.AddActor(a)
+
+    def removeActor(self, a):
+        self.renderer.RemoveActor(a)
+
+    def update(self, event, obj):
+        super(DrawingWorld, self).update(self.dt)
+        self.renderWindow.Render()
+        #if time() > self.startTime + 10:
+        #   self.iren.TerminateApp()
+
