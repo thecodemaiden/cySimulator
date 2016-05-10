@@ -91,7 +91,6 @@ class RF24Strength(Field):
             colors.SetNumberOfComponents(3)
             colors.SetName('Colors')
             for v in np.nditer(logValues):
-                #choose a random color for testing
                 c = self.getHeatMapColor(v)
                 colors.InsertNextTuple3(*c)
 

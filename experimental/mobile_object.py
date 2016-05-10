@@ -57,9 +57,9 @@ class MobileObject(object):
         destZ = uniform(-self.world.zLength/2,self.world.zLength/2)
 
         moveV = uniform(20, 100)
-        Vx = (destX -self.pos.x)/moveV
-        Vy = (destY -self.pos.y)/moveV
-        Vz = (destZ -self.pos.z)/moveV
+        Vx = moveV/(destX -self.pos.x)
+        Vy = moveV/(destY -self.pos.y)
+        Vz = moveV/(destZ -self.pos.z)
 
 
         self.dest = Point3d(destX, destY, destZ)

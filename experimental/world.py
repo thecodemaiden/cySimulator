@@ -41,7 +41,11 @@ class DrawingWorld(World):
         self.iren.SetRenderWindow(self.renderWindow)
 
         self.actor = vtk.vtkCubeAxesActor()
-        self.actor.SetCamera(self.renderer.GetActiveCamera())
+        self.camera = self.renderer.GetActiveCamera()
+        self.camera.SetFocalPoint((0,0,0))
+        self.camera.SetPosition((0, 0, 300))
+
+        self.actor.SetCamera(self.camera)
         self.actor.SetBounds(-xLength/2, xLength/2, -yLength/2, yLength/2, -zLength/2, zLength/2)
         self.actor.DrawXGridlinesOn()
         self.actor.DrawYGridlinesOn()
