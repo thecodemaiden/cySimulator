@@ -84,8 +84,8 @@ class PlaneReflection(object):
             newCenter[planeAxis] = planePos + dCenterToPlane
             #planeNormal[planeAxis] = -normalDirection
             newSphere2 = FieldInfluence(newCenter, sphereField.r, sphereField.mag)
-            plane2 = PlaneReflection(planeOrigin, planeNormal)
-            newSphere2.reflectFrom.append(plane2)
+            #plane2 = PlaneReflection(planeOrigin, planeNormal)
+            newSphere2.reflectFrom.append(plane1)
 
             return [newSphere1, newSphere2]
 

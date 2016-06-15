@@ -40,16 +40,29 @@ class DrawingWorld(World):
         self.iren = vtk.vtkRenderWindowInteractor()
         self.iren.SetRenderWindow(self.renderWindow)
 
-        self.actor = vtk.vtkCubeAxesActor()
+        #self.actor = vtk.vtkCubeAxesActor()
+        boundingBox = vtk.vtkCubeSource()
+        boundingBox.SetXLength(xLength)
+        boundingBox.SetYLength(yLength)
+        boundingBox.SetZLength(zLength)
+
+        mapper = vtk.vtkPolyDataMapper()
+        mapper.SetInputConnection(boundingBox.GetOutputPort())
+
+        self.actor = vtk.vtkActor()
+        self.actor.SetMapper(mapper)
+        self.actor.GetProperty().SetRepresentationToWireframe()
+        
+
         self.camera = self.renderer.GetActiveCamera()
         self.camera.SetFocalPoint((0,0,0))
         self.camera.SetPosition((0, 0, 300))
-
-        self.actor.SetCamera(self.camera)
-        self.actor.SetBounds(-xLength/2, xLength/2, -yLength/2, yLength/2, -zLength/2, zLength/2)
-        self.actor.DrawXGridlinesOn()
-        self.actor.DrawYGridlinesOn()
-        self.actor.DrawZGridlinesOn()
+        self.renderer.SetActiveCamera(self.camera)
+        #self.actor.SetCamera(self.camera)
+        #self.actor.SetBounds(-xLength/2, xLength/2, -yLength/2, yLength/2, -zLength/2, zLength/2)
+        #self.actor.DrawXGridlinesOn()
+        #self.actor.DrawYGridlinesOn()
+        #self.actor.DrawZGridlinesOn()
 
         self.renderer.AddActor(self.actor)
 

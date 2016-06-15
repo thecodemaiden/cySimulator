@@ -10,7 +10,7 @@ from random import random
 class SoundIntensity(SphereField):
     """ TODO: true intensity depends on the phase as well as mag (RMS?) """
     def __init__(self, world):
-        super(SoundIntensity, self).__init__('Sound', [330.0, 0.05])
+        super(SoundIntensity, self).__init__('Sound', [330.0, 0.02])
         self.world = world
         self.world.addField(self)
 
@@ -29,20 +29,43 @@ class SoundIntensity(SphereField):
         sphere.SetThetaResolution(15)
 
         mapper = vtk.vtkPolyDataMapper()
-        mapper.SetInputConnection(sphere.GetOutputPort())
+
+        if (s.reflectFrom):
+            pc = vtk.vtkPlaneCollection()
+            for planeDef in s.reflectFrom:
+                origin = planeDef.origin
+                normal = planeDef.normal
+                p = vtk.vtkPlane()
+                p.SetNormal(normal)
+                p.SetOrigin(origin)
+                pc.AddItem(p)
+
+            clipper = vtk.vtkClipClosedSurface()
+            clipper.SetInputConnection(sphere.GetOutputPort())
+            clipper.SetClippingPlanes(pc)
+            clipper.Update()
+
+            mapper.SetInputConnection(clipper.GetOutputPort())
+        else:
+            mapper.SetInputConnection(sphere.GetOutputPort())
 
         actor = vtk.vtkActor()
         actor.SetMapper(mapper)
-        actor.GetProperty().SetOpacity(0.33333)
+        actor.GetProperty().SetOpacity(0.166667)
 
         return actor
 
     def reflectSphereIfNeeded(self, s):
         # let's only reflect off +- x for now
-        firstReflect = PlaneReflection.reflectSphereFieldOffPlane(s, 0, -self.world.xLength/2)
-        secondReflect = PlaneReflection.reflectSphereFieldOffPlane(s, 0, self.world.xLength/2)
-
-        together = list(set(firstReflect+secondReflect))
+        reflections = set()
+        walls = [-self.world.xLength/2, +self.world.xLength/2, -self.world.yLength/2, +self.world.yLength]#, -self.world.zLength/2, +self.world.zLength/2]
+        #walls = [-self.world.xLength/2, +self.world.xLength/2, -self.world.yLength/2, +self.world.yLength, -self.world.zLength/2, +self.world.zLength/2]
+        for idx, val in enumerate(walls):
+            axis = idx/2
+            reflections.update(PlaneReflection.reflectSphereFieldOffPlane(s,axis, val))
+      
+        
+        together = list(reflections)
 
         return together
         
@@ -244,8 +267,6 @@ class SoundIntensityDots(SoundIntensity):
 class MobileSoundObject(MobileObject, FieldObject):
     def __init__(self, **kwargs):
         super(MobileSoundObject, self).__init__(**kwargs)
-        sz = kwargs.get('size', [0,0,0])
-        self.size = sz
      
         self.setupDraw()
         self.emissionStrength = 5
@@ -273,20 +294,18 @@ class MobileSoundObject(MobileObject, FieldObject):
    
         self.actor.SetPosition(*self.pos)
         # use influence of field
+from common import Point3d
 w = DrawingWorld(200,200, 100, 0.005)
 f = SoundIntensity(w)
 #f = SoundIntensityDots(w, 5)
-for i in range(2):
+for i in range(1):
     m = MobileSoundObject(world=w, name="obj" + str(i), size=[10,10,10])
     w.addActor(m.actor)
     w.registerToField(m, 'Sound')
+    m.changeDest()
 
-#m1 = MobileRFObject(world=w, name="zippy1", size=[10,10,10])
-#m2 = MobileRFObject(world=w, name="zippy2", size=[10,10,10])
-
-#w.addActor(m1.actor)
-#w.addActor(m2.actor)
-
-#w.registerToField(m1, 'RF24Strength')
-#w.registerToField(m2, 'RF24Strength')
+entities = list(w.entityList)
+e = entities[0]
+#e.pos = Point3d(0,-90,0)
+e.setDestination(-77,-90,0)
 w.startDrawing()

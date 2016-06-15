@@ -9,6 +9,8 @@ class MobileObject(object):
     def __init__(self, **kwargs):
         world = kwargs['world'] # necessary
         name = kwargs.get('name', 'MobileObject')
+        sz = kwargs.get('size', [0,0,0])
+        self.size = sz
 
         #super(MobileObject, self).__init__()
         self.pos = Point3d(0,0,0)
@@ -47,20 +49,36 @@ class MobileObject(object):
            
         #print("[{}]\tpos: {:5.2f},{:5.2f},{:5.2f}\tdest: {:5.2f},{:5.2f},{:5.2f}".format(self.name, *(self.pos + self.dest)))
 
-        if self.v == (0,0,0):
-            self.changeDest()
+        #if self.v == (0,0,0):
+        #    self.changeDest()
 
-
-    def changeDest(self):
-        destX = uniform(-self.world.xLength/2,self.world.xLength/2)
-        destY = uniform(-self.world.yLength/2,self.world.yLength/2)
-        destZ = uniform(-self.world.zLength/2,self.world.zLength/2)
-
+    def setDestination(self, destX, destY, destZ):
         moveV = uniform(20, 100)
-        Vx = moveV/(destX -self.pos.x)
-        Vy = moveV/(destY -self.pos.y)
-        Vz = moveV/(destZ -self.pos.z)
-
+        xDist = (destX - self.pos.x)
+        if xDist != 0:
+            Vx = moveV/(xDist)
+        else:
+            Vx = 0
+        
+        yDist = (destY - self.pos.y)
+        if yDist != 0:
+            Vy = moveV/(yDist)
+        else:
+            Vy = 0
+                
+        zDist = (destZ - self.pos.z)
+        if zDist != 0:
+            Vz = moveV/(zDist)
+        else:
+            Vz = 0
 
         self.dest = Point3d(destX, destY, destZ)
         self.v = (Vx, Vy, Vz)
+
+    def changeDest(self):
+
+        destX = uniform(-self.world.xLength/2+self.size[0],self.world.xLength/2-self.size[0])
+        destY = uniform(-self.world.yLength/2+self.size[1],self.world.yLength/2-self.size[1])
+        destZ = uniform(-self.world.zLength/2+self.size[2],self.world.zLength/2-self.size[2])
+
+        self.setDestination(destX,destY,destZ)
