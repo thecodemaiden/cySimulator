@@ -42,13 +42,28 @@ class Quadcopter(object):
 
         #self.makePhysicsBody()
         self.makeCrossBody()
+
+        #attach an angular motor joint to the quadcopter
+        self.aMotor = ode.AMotor(self.environment.world)
+        self.aMotor.setNumAxes(3)
+        self.aMotor.setMode(ode.AMotorEuler)
+        self.aMotor.attach(self.centerBody, None)
+        self.aMotor.setAxis(0, 1, [1, 0, 0])
+        #self.aMotor.setAxis(1, 1, [0, 1, 0])
+        self.aMotor.setAxis(2, 2, [0, 0, 1])
+
         self.startTime = None
         self.moved = False
         #self.environment.addObject(self)
         self.pid = PidController(30, 1, 0)
+        self.pid.target = [0.00,0.1,0.0]
 
     def onVisualizationStart(self):
         pass
+
+    def setPosition(self, pos):
+        x,y,z = [self.environment.lengthScale*c for c in pos]
+        self.centerBody.setPosition((x,y,z))
 
     def makeCrossBody(self):
         physicsWorld = self.environment.world
@@ -112,38 +127,38 @@ class Quadcopter(object):
         mainBody.setMass(bodyMass)
         self.centerBody = mainBody
 
-    def calculatePropDrag(self):
-        ''' unused... '''
-        drag = [0,0,0,0]
-        for i in range(4):
-            drag[i] = self.motorW[i]*self.motorW[i]*self.motorDragCoefficient
-            #drag[i] = self.motorW[i]*self.motorDragCoefficient
-        return drag
-
-    def calculatePropThrust(self):
-        ''' unused... '''
-        thrust = [0,0,0,0]
-        for i in range(4):
-            thrust[i] = self.motorW[i]*self.motorW[i]*self.propellerThrustCoefficient
-        return thrust
-
     def calculateThrust(self):
         return [0, sum(array(self.motorW))*self.propellerThrustCoefficient, 0]
 
     def calculateTorques(self):
+        # roll, pitch, yaw
         return [self.armLength * self.propellerThrustCoefficient * (self.motorW[0] - self.motorW[2]),
-                self.motorDragCoefficient * (self.motorW[0] - self.motorW[1] + self.motorW[2] - self.motorW[3]),
+                self.motorDragCoefficient * (-self.motorW[0] + self.motorW[1] - self.motorW[2] + self.motorW[3]),
                 self.armLength * self.propellerThrustCoefficient * (self.motorW[1] - self.motorW[3])] 
 
-    def update(self,dt):
-        if self.startTime is None:
-            self.startTime = time()
-        elif (time() > self.startTime + 10) and not self.moved:
-                self.pid.target = array([0, 0., .0524])
-                self.moved = True
+    def pidOutputToMotors(self, err):
+        # shamelessly ripped from MATLAB code
+        inertia = self.centerBody.getMass().I
+        e1 = err[0]; e2 = err[1]; e3 = err[2]; 
+        Ix = inertia[0][0]; Iy = inertia[1][1]; Iz = inertia[2][2]
+        k = self.propellerThrustCoefficient
+        L = self.armLength
+        b = self.motorDragCoefficient
 
-        thrust_adj = self.pid.update(self, dt)
-        x = 48000
+        each = 48000 # todo - calculate hover W2
+
+        motorVals = [0,0,0,0]
+        motorVals[0] = each -(-2 * b * e1 * Ix + e3 * Iz * k * L)/(4 * b * k * L);
+        motorVals[1] = each + e3 * Iz/(4 * b) + (e2 * Iy)/(2 * k * L);
+        motorVals[2] = each -(2 * b * e1 * Ix + e3 * Iz * k * L)/(4 * b * k * L);
+        motorVals[3] = each + e3 * Iz/(4 * b) - (e2 * Iy)/(2 * k * L);
+
+        return motorVals
+
+    def update(self,dt):
+
+        pid_error = self.pid.update(self, dt)
+        thrust_adj = self.pidOutputToMotors(pid_error)
         self.motorW = thrust_adj
 
         # apply thrust and yaw torque at each prop
@@ -151,7 +166,7 @@ class Quadcopter(object):
         torque = self.calculateTorques()
 
         self.centerBody.addRelForce(thrust)
-        self.centerBody.addRelTorque(torque)
+        self.aMotor.addTorques(*torque)
         
         # finally, the air drag force - turns out we need it to hover!
         v = self.centerBody.getLinearVel()
@@ -159,7 +174,6 @@ class Quadcopter(object):
         airFriction = (array(v)*-self.airFrictionCoefficient*vMag)
         self.centerBody.addForce(airFriction)
        
-
 
     
 class PidController(object):
@@ -204,27 +218,87 @@ class PidController(object):
         self.integral += dt*nowError
         self.lastError = nowError
 
-        return self.err2inputs(copter, err, totalW2)
+        return err
 
-    def err2inputs(self, copter, err, total):
-        # shamelessly ripped from MATLAB code
-        inertia = copter.centerBody.getMass().I
-        e1 = err[0]; e2 = err[1]; e3 = err[2]; 
-        Ix = inertia[0][0]; Iz = inertia[1][1]; Iy = inertia[2][2]
-        k = copter.propellerThrustCoefficient
-        L = copter.armLength
-        b = copter.motorDragCoefficient
+class SimplePid(object):
+    def __init__(self, kP, kI, kD, i_limit=1):
+        self.kp = float(kP)
+        self.ki = float(kI)
+        self.kd = float(kD)
+        self.i_limit_hi = float(i_limit)
+        self.i_limit_lo = float(-i_limit)
+        self.target = 0.0
+        self.reset()
 
-        eachW2 = total/4
-        each = eachW2
+    def reset(self):
+        #self.error = 0
+        self.last_error = 0.0
+        self.integral = 0.0
 
-        motorVals = [0,0,0,0]
-        motorVals[0] = each -(2 * b * e1 * Ix + e3 * Iz * k * L)/(4 * b * k * L);
-        motorVals[1] = each + e3 * Iz/(4 * b) - (e2 * Iy)/(2 * k * L);
-        motorVals[2] = each -(-2 * b * e1 * Ix + e3 * Iz * k * L)/(4 * b * k * L);
-        motorVals[3] = each + e3 * Iz/(4 * b) + (e2 * Iy)/(2 * k * L);
+    def update(self, measured, dt):
+        error = self.target - measured
+        self.integral += self.error*dt
+        self.integral = max(self.i_limit_lo, min(self.i_limit_hi, self.integral))
+        d = (error - self.last_error)/dt
+        self.last_error = error
+        output = error*self.kp + self.integral*self.ki + d*self.kd
 
-        return (motorVals)
+        return output
+
+class PidRateAtt(object):
+    def __init__(self):
+        self.rollRatePid = SimplePid(250.0, 500, 2.5, 33.3)
+        self.pitchRatePid = SimplePid(250.0, 500, 2.5, 33.3)
+        self.yawRatePid = SimplePid(70.0, 16.7, 0, 166.7)
+
+        self.rollPid = SimplePid(10, 4.0, 0, 20.)
+        self.pitchPid = SimplePid(10, 4.0, 0, 20.)
+        self.yawPid = SimplePid(10, 1.0, 0.35, 360)
+
+        self.rollOutput = 0.0
+        self.pitchOutput = 0.0
+        self.yawOutput = 0.0
+
+        self.thrustTarget = 0.0
+        
+
+    def update(self, copter, targets, dt):
+        """ Targets should be a sequence of (roll, pitch, yaw, thrust) """
+        R = copter.centerBody.getRotation()
+
+        r  = arctan2(R[7], R[8]);     #phi
+        y = arcsin(-R[6]);            #theta
+        p   = arctan2(R[3], R[0]);    #psi
+
+        self.rollPid.target = targets[0]
+        self.pitchPid.target = targets[1]
+        self.yawPid.target = targets[2]
+
+        self.thrustTarget = targets[3]
+
+        rollRate = self.rollPid.update(r, dt)
+        pitchRate = self.pitchPid.update(p, dt)
+        yawRate = self.yawPid.update(y, dt)
+
+        self.rollRatePid.target = rollRate
+        self.pitchRatePid.target = pitchRate
+        self.yawRatePid.target = yawRate
+
+        wr = copter.aMotor.getAngleRate(0)
+        wy = copter.aMotor.getAngleRate(1)
+        wp = copter.aMotor.getAngleRate(2)
+         
+
+        self.rollOutput = self.rollRatePid.update(wr, dt)
+        self.pitchOutput = self.pitchRatePid.update(wp, dt)
+        self.yawOutput = self.yawRatePid.update(wy, dt)
+
+
+
+
+
+
+
 
 
         
