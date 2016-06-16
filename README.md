@@ -6,9 +6,10 @@ This README would normally document whatever steps are necessary to get your app
 ### How do I get set up? ###
 
 You need Python 2.7 with the following modules:
- * vtk
- * [pyode](https://bitbucket.org/odedevs/ode/downloads)
- * numpy
+
+* vtk
+* [pyode](https://bitbucket.org/odedevs/ode/downloads)
+* numpy
 
 ### Then what? ###
 
