@@ -3,20 +3,19 @@ import ode
 from numpy import sqrt, array, arctan2, arcsin, cos, sum, arccos
 from numpy.linalg import norm
 import logging
-
+from sensors import Radio
+from my_object import PhysicalObject
 from time import time 
 
-class Quadcopter(object):
+class Quadcopter(PhysicalObject):
     def __init__(self, armLength, bodyLength, bodyHeight, motorMass, bodyMass, environment):
-        super(Quadcopter, self).__init__()
+        super(Quadcopter, self).__init__(environment)
         self.logger = logging.getLogger(name='Quadsim.Quadcopter')
         self.logger.setLevel(logging.DEBUG)
 
-        self.environment = environment
         ms = self.environment.massScale
         ls = self.environment.lengthScale
         fs = self.environment.forceScale
-
 
         self.propellerThrustCoefficient = 1e-4*fs
         self.motorDragCoefficient = 1e-7*fs
@@ -52,14 +51,29 @@ class Quadcopter(object):
         #self.aMotor.setAxis(1, 1, [0, 1, 0])
         self.aMotor.setAxis(2, 2, [0, 0, 1])
 
+        self.radio = Radio()
+        self.radio.rep = None
+
         self.startTime = None
         self.moved = False
         #self.environment.addObject(self)
         self.pid = PidController(30, 1, 0)
         self.pid.target = [0.00,0.1,0.0]
 
-    def onVisualizationStart(self):
-        pass
+    def drawExtras(self):
+        # draw radio radius
+        renderer = self.environment.sim.ren #todo: expose this nicely
+        if self.radio.rep is not None:
+            renderer.removeActor(self.radio.rep)
+
+        sphere = vtk.vtkSphereSource()
+        sphere.SetCenter(*s.center)
+        sphere.SetRadius(s.r)
+        sphere.SetPhiResolution(15)
+        sphere.SetThetaResolution(15)
+
+        mapper = vtk.vtkPolyDataMapper()
+
 
     def setPosition(self, pos):
         x,y,z = [self.environment.lengthScale*c for c in pos]
@@ -194,13 +208,6 @@ class PidController(object):
         y = arcsin(-R[6]);            #theta
         p   = arctan2(R[3], R[0]);    #psi
 
-        ''' 
-        q = copter.centerBody.getQuaternion()
-        r = arctan2(2*(q[0]*q[1] + q[2]*q[3]), 1 - 2*(q[1]*q[1] + q[2]*q[2]))
-        p = arcsin(2*(q[0]*q[2] - q[3]*q[1]))
-        y = arctan2(2*(q[0]*q[3] + q[1]*q[2]), 1 - 2*(q[2]*q[2] + q[3]*q[3]))
-        '''
-
         theta = array([r,p,y])
         #get thetadot later...
         #thetadot = array(copter.getAngularVelocity())
@@ -208,7 +215,6 @@ class PidController(object):
 
         # WTF is hapenning????
         #totalW2 = copter.totalMass * 9.81*fs/ (copter.propellerThrustCoefficient * cos(r) * cos(p))
-        totalW2 = 48000*4
 
         nowError = self.target - theta
         dError = (nowError - self.lastError)/dt
@@ -292,6 +298,8 @@ class PidRateAtt(object):
         self.rollOutput = self.rollRatePid.update(wr, dt)
         self.pitchOutput = self.pitchRatePid.update(wp, dt)
         self.yawOutput = self.yawRatePid.update(wy, dt)
+
+        return self.rollOutput, self.pitchOutput, self.yawOutput
 
 
 

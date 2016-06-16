@@ -29,6 +29,7 @@ class MyVisualization(ODE_Visualization):
             self.space.collide(None, self.near_callback)
             self.step(self.dt/n)
             self.contactGroup.empty()
+        self.environment.drawExtras()
         if self.frameAccum >= self.frametime:
             self.update() # do not forget ...
             self.frameAccum = 0
@@ -74,6 +75,10 @@ class Environment(object):
         
         #self.floor = ode.GeomPlane(self.space, (0, 1, 0), groundY);
 
+    def drawExtras(self):
+        for o in self.objectList:
+            o.drawExtras()
+
     def getGeomVizProperty(self, g):
         return self.sim.GetProperty(g)
 
@@ -84,7 +89,6 @@ class Environment(object):
 
     def start(self):
         self.sim = MyVisualization(self.world, self.space, self, self.dt)
-        #self.sim.GetProperty(self.floor).SetColor(1.,0,.5)
         for o in self.objectList:
             o.onVisualizationStart()
         self.sim.start()
