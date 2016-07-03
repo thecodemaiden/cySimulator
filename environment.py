@@ -76,8 +76,9 @@ class Environment(object):
         #self.floor = ode.GeomPlane(self.space, (0, 1, 0), groundY);
 
     def drawExtras(self):
-        for o in self.objectList:
-            o.drawExtras()
+        #for o in self.objectList:
+            #o.drawExtras()
+         pass
 
     def getGeomVizProperty(self, g):
         return self.sim.GetProperty(g)

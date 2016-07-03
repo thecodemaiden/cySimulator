@@ -57,8 +57,8 @@ class Quadcopter(PhysicalObject):
         self.startTime = None
         self.moved = False
         #self.environment.addObject(self)
-        self.pid = PidController(30, 1, 0)
-        self.pid.target = [0.00,0.1,0.0]
+        self.pid = PidController(15, 1, 0)
+        self.pid.target = [0.1,0.0,0.0]
 
     def drawExtras(self):
         # draw radio radius
@@ -243,7 +243,7 @@ class SimplePid(object):
 
     def update(self, measured, dt):
         error = self.target - measured
-        self.integral += self.error*dt
+        self.integral += error*dt
         self.integral = max(self.i_limit_lo, min(self.i_limit_hi, self.integral))
         d = (error - self.last_error)/dt
         self.last_error = error
@@ -265,10 +265,12 @@ class PidRateAtt(object):
         self.pitchOutput = 0.0
         self.yawOutput = 0.0
 
+        self.target = [0.,0.,0.]
+
         self.thrustTarget = 0.0
         
 
-    def update(self, copter, targets, dt):
+    def update(self, copter, dt):
         """ Targets should be a sequence of (roll, pitch, yaw, thrust) """
         R = copter.centerBody.getRotation()
 
@@ -276,11 +278,11 @@ class PidRateAtt(object):
         y = arcsin(-R[6]);            #theta
         p   = arctan2(R[3], R[0]);    #psi
 
-        self.rollPid.target = targets[0]
-        self.pitchPid.target = targets[1]
-        self.yawPid.target = targets[2]
+        self.rollPid.target = self.target[0]
+        self.pitchPid.target = self.target[1]
+        self.yawPid.target = self.target[2]
 
-        self.thrustTarget = targets[3]
+        #self.thrustTarget = targets[3]
 
         rollRate = self.rollPid.update(r, dt)
         pitchRate = self.pitchPid.update(p, dt)

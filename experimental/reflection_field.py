@@ -19,5 +19,3 @@ class ReflectionInfo(object):
         self.parent = parent
         self.children = []
         self.plane = plane
-
-    def updateChildren(self,

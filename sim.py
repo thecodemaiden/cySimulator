@@ -4,6 +4,7 @@ from environment import Environment
 from wall import Wall
 import logging
 from random import uniform
+from config_reader import ConfigReader
 
 def parse_room_dimen(desc_str):
     desc_str.replace(" ", "")
@@ -27,10 +28,11 @@ if __name__ == '__main__':
     logger.addHandler(hndlr)
 
     e = Environment()
+    layout_path = 'config/layout/example_layout.xml'
 
-    roomStr = raw_input('Room dimensions in metres (length x width x height): ')
-    roomDims = parse_room_dimen(roomStr)
-    print('Room will be {}m x {}m x {}m'.format(*roomDims))
+    print('Room info read from {}'.format(layout_path))
+
+    roomDims = [2,2,2]
 
     nq = raw_input('Number of quadcopters: ')
     try:
@@ -52,9 +54,11 @@ if __name__ == '__main__':
         q.setPosition((x,y,z))
         print('Copter at {}, {}, {}'.format(x,y,z))
 
-    r = Wall.makeRoom(tuple(roomDims), (0,0,0), e)
-    for wall in r:
-        e.addObject(wall)
+    cr = ConfigReader(e)
+    walls = cr.readLayoutFile(layout_path)
+    for w in walls:
+        e.addObject(w)
+  
 
     e.start()
 

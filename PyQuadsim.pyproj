@@ -1,0 +1,103 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{e1ff6596-fc9a-4fdf-9288-d3e76ce33a0e}</ProjectGuid>
+    <ProjectHome />
+    <StartupFile>sim.py</StartupFile>
+    <SearchPath />
+    <WorkingDirectory>.</WorkingDirectory>
+    <OutputPath>.</OutputPath>
+    <ProjectTypeGuids>{888888a0-9f3d-457c-b088-3a5042f75d52}</ProjectTypeGuids>
+    <LaunchProvider>Standard Python launcher</LaunchProvider>
+    <InterpreterId>
+    </InterpreterId>
+    <InterpreterVersion>
+    </InterpreterVersion>
+    <IsWindowsApplication>False</IsWindowsApplication>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'" />
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'" />
+  <PropertyGroup>
+    <VisualStudioVersion Condition=" '$(VisualStudioVersion)' == '' ">10.0</VisualStudioVersion>
+    <PtvsTargetsFile>$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets</PtvsTargetsFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="config_reader.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="experimental\clip_test.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="experimental\common.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="experimental\field.py" />
+    <Compile Include="experimental\mobile_object.py" />
+    <Compile Include="experimental\reflection_field.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="experimental\rf24_spread.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="experimental\rssi24_test.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="experimental\sound_test.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="experimental\world.py" />
+    <Compile Include="my_object.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="programs\program_parser.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="programs\__init.__.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="sensors\radio.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="sensors\__init__.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="wall.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="environment.py" />
+    <Compile Include="odeViz\ode_helper.py" />
+    <Compile Include="odeViz\ode_objects.py" />
+    <Compile Include="odeViz\ode_visualization.py" />
+    <Compile Include="odeViz\__init__.py" />
+    <Compile Include="quad.py" />
+    <Compile Include="sim.py" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="config\actuators\" />
+    <Folder Include="config\bodies\" />
+    <Folder Include="config\layout\" />
+    <Folder Include="config\programs\" />
+    <Folder Include="config\sensors\" />
+    <Folder Include="experimental\" />
+    <Folder Include="config\" />
+    <Folder Include="programs\" />
+    <Folder Include="sensors\" />
+    <Folder Include="odeViz\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="config\actuators\quadrotors.cfg" />
+    <Content Include="config\actuators\radioTx.cfg" />
+    <Content Include="config\actuators\speaker.cfg" />
+    <Content Include="config\bodies\quadcopter.cfg" />
+    <Content Include="config\layout\example_layout.xml" />
+    <Content Include="config\programs\commandList.txt" />
+    <Content Include="config\sensors\accelerometer.cfg" />
+    <Content Include="config\sensors\gyroscope.cfg" />
+    <Content Include="config\sensors\microphone.cfg" />
+    <Content Include="config\sensors\radioRx.cfg" />
+  </ItemGroup>
+  <Import Project="$(PtvsTargetsFile)" Condition="Exists($(PtvsTargetsFile))" />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" Condition="!Exists($(PtvsTargetsFile))" />
+</Project>
