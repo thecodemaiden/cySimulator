@@ -56,11 +56,11 @@ class ConfigReader(object):
 
         holeWalls = []
 
-        #for key, dim in doorList.items():
-        #    victimWall = key
-        #    doorPos, doorSize = dim
-        #    holeWalls += Wall.cutHoleInWall(wallList[victimWall], doorSize, doorPos)
-        #    wallList.pop(victimWall)
+        for key, dim in doorList.items():
+            victimWall = key
+            doorPos, doorSize = dim
+            holeWalls += Wall.cutHoleInWall(wallList[victimWall], doorSize, doorPos)
+            wallList.pop(victimWall)
 
         holeWalls += wallList.values()
 

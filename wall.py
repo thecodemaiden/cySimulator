@@ -22,7 +22,7 @@ class Wall(PhysicalObject):
     def onVisualizationStart(self):
         p = self.environment.getGeomVizProperty(self.geom)
         p.SetColor(self.color)
-        #p.SetOpacity(0.16666)
+        p.SetOpacity(0.1)
         #p.SetRepresentationToWireframe()
         p.EdgeVisibilityOn()
     
@@ -56,7 +56,7 @@ class Wall(PhysicalObject):
                         ((maxFirstAxis1+minFirstAxis1)/2, scaledWallCenter[1], scaledWallCenter[2]), env)
             pieces.append(w)
         # next cut, also along y axis, on other x-side of hole
-        maxFirstAxis2 = scaledWallCenter[firstCutAxis] + scaledWallCenter[firstCutAxis]/2#wcx + wsx/2
+        maxFirstAxis2 = scaledWallCenter[firstCutAxis] + scaledWallSize[firstCutAxis]/2#wcx + wsx/2
         minFirstAxis2 = hole_center[firstCutAxis] + hole_size[firstCutAxis]/2#hcx + hsx/2
         firstAxisWidth2 = maxFirstAxis2 - minFirstAxis2 #maxX2 - minX2
         if (firstAxisWidth2 > 0):
@@ -78,24 +78,18 @@ class Wall(PhysicalObject):
                 # w = Wall((xw3, yw1, wsz), ((holeX2+holeX1)/2, (maxY1+minY1)/2, wcz), env)
                 w = Wall((midPieceWidth, secondAxisWidth1, scaledWallSize[2]), 
                             ((holeBegin+holeEnd)/2, (maxSecondAxis1+minSecondAxis1)/2, scaledWallCenter[2]), env)
-                #pieces.append(w)
+                pieces.append(w)
             minSecondAxis2 = scaledWallCenter[secondCutAxis] - scaledWallSize[secondCutAxis]/2
             maxSecondAxis2 = hole_center[secondCutAxis] - hole_size[secondCutAxis]/2
             secondAxisWidth2 = maxSecondAxis2 - minSecondAxis2
             if secondAxisWidth2 > 0:
                 w = Wall((midPieceWidth, secondAxisWidth2, scaledWallSize[2]), 
                             ((holeBegin+holeEnd)/2, (maxSecondAxis2+minSecondAxis2)/2, scaledWallCenter[2]), env)
-                #pieces.append(w)
+                pieces.append(w)
 
 
 
         return pieces
-
-
-
-
-            
-            
 
     @classmethod
     def makeRoom(cls, size, center, environment, wallThickness = 0.01):
@@ -103,7 +97,7 @@ class Wall(PhysicalObject):
         wallList = []
         sx,sy,sz = size
         cx, cy, cz = center
-        t = wallThickness*environment.lengthScale
+        t = wallThickness#*environment.lengthScale
 
         # top (y+)
         w = cls((sx, t, sz), (cx, cy+sy/2+t/2, cz), environment)
