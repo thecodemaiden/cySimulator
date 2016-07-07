@@ -1,24 +1,10 @@
 from vtk import *
-from quad import Quadcopter
+from config.bodies import Quadcopter
 from environment import Environment
 from wall import Wall
 import logging
 from random import uniform
 from config_reader import ConfigReader
-
-def parse_room_dimen(desc_str):
-    desc_str.replace(" ", "")
-    desc_str = desc_str.lower()
-    nums = desc_str.split('x')[0:3] # limit to 3 vals
-    dims = [2,2,2] # default values
-    
-    for i, n in enumerate(nums):
-        try:
-            dims[i] = float(n)
-        except ValueError:
-            pass
-
-    return dims
     
 
 if __name__ == '__main__':
@@ -28,8 +14,11 @@ if __name__ == '__main__':
     logger.addHandler(hndlr)
 
     e = Environment()
-    layout_path = 'config/layout/example_layout.xml'
+   
+    cr = ConfigReader(e)
 
+    layout_path = 'config/layout/example_layout.xml'
+    quadcopter_body_path = 'config/bodies/quadcopter.xml'
     print('Room info read from {}'.format(layout_path))
 
     roomDims = [2,2,2]
@@ -45,7 +34,7 @@ if __name__ == '__main__':
 
     for i in range(nq):
         name = 'Quad{}'.format(i)
-        q = Quadcopter(.1,.1, 0.01, 0.01, 0.06, e)
+        q = cr.readBodyFile(quadcopter_body_path)
         e.addObject(q)
         q.name = name
         x = uniform(-roomDims[0]/2 + .15, +roomDims[0]/2 - .15) # keep copters out of the walls
@@ -54,7 +43,6 @@ if __name__ == '__main__':
         q.setPosition((x,y,z))
         print('Copter at {}, {}, {}'.format(x,y,z))
 
-    cr = ConfigReader(e)
     walls = cr.readLayoutFile(layout_path)
     for w in walls:
         e.addObject(w)

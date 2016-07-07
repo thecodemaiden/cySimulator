@@ -8,10 +8,17 @@ from my_object import PhysicalObject
 from time import time 
 
 class Quadcopter(PhysicalObject):
-    def __init__(self, armLength, bodyLength, bodyHeight, motorMass, bodyMass, environment):
+    def __init__(self, params):
+        environment = params['environment']
         super(Quadcopter, self).__init__(environment)
         self.logger = logging.getLogger(name='Quadsim.Quadcopter')
         self.logger.setLevel(logging.DEBUG)
+
+        armLength = float(params['armLength'])
+        bodyLength = float(params['centralBodyRadius'])
+        bodyHeight = float(params['centralBodyHeight'])
+        motorMass = float(params['motorMass'])
+        bodyMass = float(params['bodyMass'])
 
         ms = self.environment.massScale
         ls = self.environment.lengthScale
@@ -23,7 +30,7 @@ class Quadcopter(PhysicalObject):
 
         self.totalMass = (bodyMass + 4*motorMass)*ms
        
-        self.bodyLength = ls*float(bodyLength) / 2.0
+        self.bodyLength = ls*float(bodyLength)
         self.armLength = armLength*ls + float(self.bodyLength)/2.0
         self.bodyHeight = bodyHeight*ls
         self.motorHeight = 1.2*bodyHeight*ls
@@ -56,8 +63,9 @@ class Quadcopter(PhysicalObject):
 
         self.startTime = None
         self.moved = False
+
         #self.environment.addObject(self)
-        self.pid = PidController(15, 1, 0)
+        self.pid = PidController(2, 0, 0)
         self.pid.target = [0.1,0.0,0.0]
 
     def drawExtras(self):

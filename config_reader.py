@@ -3,6 +3,9 @@ from wall import Wall
 from collections import defaultdict
 import xml.etree.ElementTree as etree
 
+# if there is a better way to access all bodies, please do tell...
+import config.bodies as bodies
+
 class ConfigReader(object):
     """Reads the various option files"""
     def __init__(self, environment):
@@ -65,6 +68,27 @@ class ConfigReader(object):
         holeWalls += wallList.values()
 
         return holeWalls
+
+    def readBodyFile(self, filename):
+        bodyTree = etree.parse(filename)
+        root = bodyTree.getroot()
+
+        className = root.attrib['class']
+        try:
+            bodyClass = getattr(bodies, className)
+        except AttributeError:
+            return None # no such body
+        params = {}
+        params['environment'] = self.environment
+        xmlParams = root.findall('param')
+        for p in xmlParams:
+            params[p.attrib['name']] = p.attrib['value']
+            # todo: add type to xml and cast here
+        newBody = bodyClass(params)
+        return newBody
+
+
+
 
         
                     
