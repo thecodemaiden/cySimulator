@@ -24,6 +24,11 @@
     <PtvsTargetsFile>$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets</PtvsTargetsFile>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="bodies\quad.py" />
+    <Compile Include="bodies\__init__.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="config\programs\program_parser.py" />
     <Compile Include="config_reader.py">
       <SubType>Code</SubType>
     </Compile>
@@ -51,12 +56,10 @@
     <Compile Include="my_object.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="programs\program_parser.py">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="programs\__init.__.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="sensors\accelerometer.py" />
     <Compile Include="sensors\radio.py">
       <SubType>Code</SubType>
     </Compile>
@@ -71,13 +74,12 @@
     <Compile Include="odeViz\ode_objects.py" />
     <Compile Include="odeViz\ode_visualization.py" />
     <Compile Include="odeViz\__init__.py" />
-    <Compile Include="quad.py" />
     <Compile Include="sim.py" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="bodies\" />
     <Folder Include="config\actuators\" />
-    <Folder Include="config\bodies\" />
-    <Folder Include="config\layout\" />
+    <Folder Include="layout\" />
     <Folder Include="config\programs\" />
     <Folder Include="config\sensors\" />
     <Folder Include="experimental\" />
@@ -90,8 +92,8 @@
     <Content Include="config\actuators\quadrotors.cfg" />
     <Content Include="config\actuators\radioTx.cfg" />
     <Content Include="config\actuators\speaker.cfg" />
-    <Content Include="config\bodies\quadcopter.cfg" />
-    <Content Include="config\layout\example_layout.xml" />
+    <Content Include="bodies\quadcopter.xml" />
+    <Content Include="layout\example_layout.xml" />
     <Content Include="config\programs\commandList.txt" />
     <Content Include="config\sensors\accelerometer.cfg" />
     <Content Include="config\sensors\gyroscope.cfg" />

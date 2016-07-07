@@ -1,5 +1,4 @@
 from vtk import *
-from config.bodies import Quadcopter
 from environment import Environment
 from wall import Wall
 import logging
@@ -17,8 +16,8 @@ if __name__ == '__main__':
    
     cr = ConfigReader(e)
 
-    layout_path = 'config/layout/example_layout.xml'
-    quadcopter_body_path = 'config/bodies/quadcopter.xml'
+    layout_path = 'layout/example_layout.xml'
+    quadcopter_body_path = 'bodies/quadcopter.xml'
     print('Room info read from {}'.format(layout_path))
 
     roomDims = [2,2,2]

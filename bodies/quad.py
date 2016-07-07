@@ -20,13 +20,17 @@ class Quadcopter(PhysicalObject):
         motorMass = float(params['motorMass'])
         bodyMass = float(params['bodyMass'])
 
+        ptc = float(params['propellerThrustCoefficient'])
+        mdc = float(params['motorDragCoefficient'])
+        afc = float(params['airFrictionCoefficient'])
+
         ms = self.environment.massScale
         ls = self.environment.lengthScale
         fs = self.environment.forceScale
 
-        self.propellerThrustCoefficient = 1e-4*fs
-        self.motorDragCoefficient = 1e-7*fs
-        self.airFrictionCoefficient = 0.25*fs
+        self.propellerThrustCoefficient = ptc*fs
+        self.motorDragCoefficient = mdc*fs
+        self.airFrictionCoefficient = afc*fs
 
         self.totalMass = (bodyMass + 4*motorMass)*ms
        
@@ -74,15 +78,27 @@ class Quadcopter(PhysicalObject):
         # draw radio radius
         renderer = self.environment.sim.ren #todo: expose this nicely
         if self.radio.rep is not None:
-            renderer.removeActor(self.radio.rep)
+            renderer.RemoveActor(self.radio.rep)
 
+        centerPos = self.physicsBody.getPosition()
         sphere = vtk.vtkSphereSource()
-        sphere.SetCenter(*s.center)
-        sphere.SetRadius(s.r)
+        sphere.SetCenter(centerPos)
+        sphere.SetRadius(self.armLength*2)
         sphere.SetPhiResolution(15)
         sphere.SetThetaResolution(15)
+        
 
         mapper = vtk.vtkPolyDataMapper()
+        mapper.SetInputConnection(sphere.GetOutputPort())
+
+        actor = vtk.vtkActor()
+        actor.SetMapper(mapper)
+        actor.GetProperty().SetColor(1,0,0)
+        actor.GetProperty().SetOpacity(0.1)
+
+        self.radio.rep = actor
+
+        renderer.AddActor(self.radio.rep)
 
 
     def setPosition(self, pos):
@@ -202,7 +218,7 @@ class Quadcopter(PhysicalObject):
         self.accelerometer.update(dt)
         v = self.accelerometer.getValue()
 
-        self.logger.info('(Acc) x: {}\ty: {}\tz: {}'.format(*v))
+        self.logger.info('{}.acc x: {}\ty: {}\tz: {}'.format(self.name, *v))
        
 
     
@@ -318,13 +334,3 @@ class PidRateAtt(object):
         self.yawOutput = self.yawRatePid.update(wy, dt)
 
         return self.rollOutput, self.pitchOutput, self.yawOutput
-
-
-
-
-
-
-
-
-
-        

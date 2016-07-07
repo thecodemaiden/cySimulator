@@ -4,7 +4,7 @@ from collections import defaultdict
 import xml.etree.ElementTree as etree
 
 # if there is a better way to access all bodies, please do tell...
-import config.bodies as bodies
+import bodies
 
 class ConfigReader(object):
     """Reads the various option files"""
