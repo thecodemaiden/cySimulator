@@ -3,7 +3,7 @@ import ode
 from numpy import sqrt, array, arctan2, arcsin, cos, sum, arccos
 from numpy.linalg import norm
 import logging
-from sensors import Radio
+from sensors import Radio, Accelerometer
 from my_object import PhysicalObject
 from time import time 
 
@@ -53,13 +53,15 @@ class Quadcopter(PhysicalObject):
         self.aMotor = ode.AMotor(self.environment.world)
         self.aMotor.setNumAxes(3)
         self.aMotor.setMode(ode.AMotorEuler)
-        self.aMotor.attach(self.centerBody, None)
+        self.aMotor.attach(self.physicsBody, None)
         self.aMotor.setAxis(0, 1, [1, 0, 0])
         #self.aMotor.setAxis(1, 1, [0, 1, 0])
         self.aMotor.setAxis(2, 2, [0, 0, 1])
 
         self.radio = Radio()
         self.radio.rep = None
+
+        self.accelerometer = Accelerometer(self)
 
         self.startTime = None
         self.moved = False
@@ -85,7 +87,7 @@ class Quadcopter(PhysicalObject):
 
     def setPosition(self, pos):
         x,y,z = [self.environment.lengthScale*c for c in pos]
-        self.centerBody.setPosition((x,y,z))
+        self.physicsBody.setPosition((x,y,z))
 
     def makeCrossBody(self):
         physicsWorld = self.environment.world
@@ -112,8 +114,9 @@ class Quadcopter(PhysicalObject):
         secondArmGeom.setBody(mainBody)
 
         self.geomList = [firstArmGeom, secondArmGeom]
-        self.centerBody = mainBody
+        self.physicsBody = mainBody
 
+        
 
     def makePhysicsBody(self):
         physicsWorld = self.environment.world
@@ -147,7 +150,7 @@ class Quadcopter(PhysicalObject):
             self.geomList += [g]
 
         mainBody.setMass(bodyMass)
-        self.centerBody = mainBody
+        self.physicsBody = mainBody
 
     def calculateThrust(self):
         return [0, sum(array(self.motorW))*self.propellerThrustCoefficient, 0]
@@ -160,7 +163,7 @@ class Quadcopter(PhysicalObject):
 
     def pidOutputToMotors(self, err):
         # shamelessly ripped from MATLAB code
-        inertia = self.centerBody.getMass().I
+        inertia = self.physicsBody.getMass().I
         e1 = err[0]; e2 = err[1]; e3 = err[2]; 
         Ix = inertia[0][0]; Iy = inertia[1][1]; Iz = inertia[2][2]
         k = self.propellerThrustCoefficient
@@ -187,14 +190,19 @@ class Quadcopter(PhysicalObject):
         thrust = self.calculateThrust()
         torque = self.calculateTorques()
 
-        self.centerBody.addRelForce(thrust)
+        self.physicsBody.addRelForce(thrust)
         self.aMotor.addTorques(*torque)
         
         # finally, the air drag force - turns out we need it to hover!
-        v = self.centerBody.getLinearVel()
+        v = self.physicsBody.getLinearVel()
         vMag = norm(v)
         airFriction = (array(v)*-self.airFrictionCoefficient*vMag)
-        self.centerBody.addForce(airFriction)
+        self.physicsBody.addForce(airFriction)
+
+        self.accelerometer.update(dt)
+        v = self.accelerometer.getValue()
+
+        self.logger.info('(Acc) x: {}\ty: {}\tz: {}'.format(*v))
        
 
     
@@ -210,7 +218,7 @@ class PidController(object):
 
     def update(self, copter, dt):
        
-        R = copter.centerBody.getRotation()
+        R = copter.physicsBody.getRotation()
 
         r  = arctan2(R[7], R[8]);     #phi
         y = arcsin(-R[6]);            #theta
@@ -280,7 +288,7 @@ class PidRateAtt(object):
 
     def update(self, copter, dt):
         """ Targets should be a sequence of (roll, pitch, yaw, thrust) """
-        R = copter.centerBody.getRotation()
+        R = copter.physicsBody.getRotation()
 
         r  = arctan2(R[7], R[8]);     #phi
         y = arcsin(-R[6]);            #theta
