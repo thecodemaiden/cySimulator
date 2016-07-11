@@ -1,0 +1,12 @@
+<body name="quadcopter" class="Quadcopter">
+  <param name="propellerThrustCoefficient" value="1e-4" />
+  <param name="motorDragCoefficient" value="1e-7" />
+  <param name="airFrictionCoefficient" value="0.25" />
+  <param name="centralBodyRadius" value="0.05" />
+  <param name="centralBodyHeight" value="0.01" />
+  <param name="armLength" value="0.1" />
+  <param name="motorHeight" value="0.012" />
+  <param name="motorRadius" value="0.05" />
+  <param name="motorMass" value="0.01" />
+  <param name="bodyMass" value="0.06" />
+</body>
