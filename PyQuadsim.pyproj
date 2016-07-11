@@ -28,7 +28,7 @@
     <Compile Include="bodies\__init__.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="config\programs\program_parser.py" />
+    <Compile Include="program_parser.py" />
     <Compile Include="config_reader.py">
       <SubType>Code</SubType>
     </Compile>
@@ -53,7 +53,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="experimental\world.py" />
-    <Compile Include="my_object.py">
+    <Compile Include="object_types.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="programs\__init.__.py">
@@ -77,6 +77,7 @@
     <Compile Include="sim.py" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="actuators\" />
     <Folder Include="bodies\" />
     <Folder Include="config\actuators\" />
     <Folder Include="layout\" />

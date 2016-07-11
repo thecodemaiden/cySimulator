@@ -1,6 +1,7 @@
 import ode
 import logging
 from vtk import vtkCamera
+from object_types import Field
 
 from odeViz.ode_visualization import ODE_Visualization
 
@@ -60,6 +61,7 @@ class Environment(object):
 
         self.dt = dt/self.lengthScale;
 
+        self.fieldList = {}
 
         self.world.setGravity((0,-9.81*self.forceScale,0))
         self.world.setCFM(1e-5)
@@ -75,10 +77,14 @@ class Environment(object):
         
         #self.floor = ode.GeomPlane(self.space, (0, 1, 0), groundY);
 
+    def addField(self, fieldName, propSpeed, minIntensity=1e-9):
+        f = Field(propSpeed, minIntensity)
+        self.fieldList[fieldName] = f
+
     def drawExtras(self):
-        #for o in self.objectList:
-            #o.drawExtras()
-         pass
+        for o in self.objectList:
+            o.drawExtras()
+        pass
 
     def getGeomVizProperty(self, g):
         return self.sim.GetProperty(g)

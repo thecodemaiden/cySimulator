@@ -4,7 +4,7 @@ from numpy import sqrt, array, arctan2, arcsin, cos, sum, arccos
 from numpy.linalg import norm
 import logging
 from sensors import Radio, Accelerometer
-from my_object import PhysicalObject
+from object_types import PhysicalObject
 from time import time 
 
 class Quadcopter(PhysicalObject):
