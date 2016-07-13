@@ -4,7 +4,7 @@ from wall import Wall
 import logging
 from random import uniform
 from config_reader import ConfigReader
-    
+from object_types import Field    
 
 if __name__ == '__main__':
     logger = logging.getLogger("Quadsim")
@@ -13,7 +13,8 @@ if __name__ == '__main__':
     logger.addHandler(hndlr)
 
     e = Environment()
-   
+    rf = Field(324, 1e-9)
+    e.addField('RF', rf)
     cr = ConfigReader(e)
 
     layout_path = 'layout/example_layout.xml'

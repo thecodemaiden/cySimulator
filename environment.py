@@ -1,8 +1,10 @@
 import ode
 import logging
+import vtk
 from vtk import vtkCamera
 from object_types import Field
-
+from heatmap import Heatmap
+import numpy as np
 from odeViz.ode_visualization import ODE_Visualization
 
 #TODO: scale the world...
@@ -20,7 +22,7 @@ class MyVisualization(ODE_Visualization):
         self.contactGroup = ode.JointGroup()
         self.environment = env
         
-        self.frametime = 1.0/60 #30 fps
+        self.frametime = 1.0/60 #1/fps
         self.frameAccum = 0 # when this hits >= frametime, set to 0 and repaint
 
     def execute(self, caller, event):
@@ -53,6 +55,9 @@ class MyVisualization(ODE_Visualization):
 class Environment(object):
     def __init__(self, dt=0.05, windowW=1024, windowH=768):
         super(Environment, self).__init__()
+        self.logger = logging.getLogger(name='Quadsim.Environment')
+        self.logger.setLevel(logging.DEBUG)
+
         self.world = ode.World()
         self.space = ode.Space()
         self.lengthScale = 10.0
@@ -75,16 +80,65 @@ class Environment(object):
 
         groundY = -10
         
-        #self.floor = ode.GeomPlane(self.space, (0, 1, 0), groundY);
+    def addField(self, fieldName, f):
+        self.fieldList[fieldName] = {'field':f, 'display':{}}
 
-    def addField(self, fieldName, propSpeed, minIntensity=1e-9):
-        f = Field(propSpeed, minIntensity)
-        self.fieldList[fieldName] = f
+    def addFieldObject(self, fieldName, o):
+        # TODO: error behavior
+        fieldInfo = self.fieldList[fieldName]
+        fieldInfo['field'].addObject(o)
+
+    def createFieldSphere(self, sphereData):
+        sphere = vtk.vtkSphereSource()
+        sphere.SetCenter(*sphereData.center)
+        sphere.SetRadius(sphereData.radius)
+        sphere.SetPhiResolution(15)
+        sphere.SetThetaResolution(15)
+
+        mapper = vtk.vtkPolyDataMapper()
+        mapper.SetInputConnection(sphere.GetOutputPort())
+        actor = vtk.vtkActor()
+        actor.SetMapper(mapper)
+        actor.GetProperty().SetOpacity(0.1)
+
+        actor.backingSphere = sphere
+
+        return actor
 
     def drawExtras(self):
         for o in self.objectList:
             o.drawExtras()
-        pass
+        # draw field stuff
+        THRESHOLD = 1.0*self.lengthScale
+        for fInfo in self.fieldList.values():
+            field = fInfo['field']
+            obj = field.objects.keys()[0]
+            spheres = field.objects[obj]
+            actors = fInfo['display']
+
+            maxIntensity = np.log(obj.getRadiatedValue()) #TODO: this may change, find another max
+            minIntensity = np.log(field.minI)
+            toRemove = [s for s in actors if s not in spheres or s.radius > THRESHOLD]
+            toAdd = [s for s in spheres if s not in actors and s.radius <= THRESHOLD]
+            # first remove all the ones that need removing
+            for s in toRemove:
+                a = actors.pop(s, None)
+                if a is not None:
+                    self.sim.ren.RemoveActor(a)
+            # then update the ones that need updating 
+            for sphere,actor in actors.items():
+                bs = actor.backingSphere
+                bs.SetRadius(sphere.radius)
+                intensityColor = Heatmap.getHeatmapValue(np.log(sphere.intensity), minIntensity, maxIntensity)
+                actor.GetProperty().SetColor(*intensityColor)
+                #actor.Update()
+            for sphere in toAdd:
+                actor = self.createFieldSphere(sphere)
+                intensityColor = Heatmap.getHeatmapValue(np.log(sphere.intensity), minIntensity, maxIntensity)
+                actor.GetProperty().SetColor(*intensityColor)
+                actors[sphere] = actor
+                self.sim.ren.AddActor(actor)
+           
 
     def getGeomVizProperty(self, g):
         return self.sim.GetProperty(g)
@@ -103,6 +157,10 @@ class Environment(object):
     def update(self, dt):
         for o in self.objectList:
             o.update(dt)
+        # then update the field
+        for f in self.fieldList.values():
+            field = f['field']
+            field.update(dt)
 
 
 

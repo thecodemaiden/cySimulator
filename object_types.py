@@ -15,17 +15,21 @@ class PhysicalObject(object):
 class FieldObject(object):
     def getRadiatedValue(self):
         pass
+    def getPosition(self):
+        pass
 
 class FieldSphere(object):
-    def __init__(self, totalPower):
+    def __init__(self, center, totalPower):
         # TODO: waves have wavelengths
         self.totalPower = totalPower
+        self.center = center
         self.radius = 0 # TODO: make this an epsilon?
-        self.intensity = 0 # LOL wut
+        self.intensity = self.totalPower # LOL wut
 
 class Field(object):
     # TODO: take material into account
     def __init__(self, propSpeed, minIntensity):
+        # TODO: replace with sphereList, mapping sphere to producing object
         self.objects = {}
         self.speed = propSpeed
         self.minI = minIntensity
@@ -38,7 +42,7 @@ class Field(object):
 
     def update(self,dt):
         for o,sphereList in self.objects.items():
-            newSphere = FieldSphere(o.getRadiatedValue())
+            newSphere = FieldSphere(o.getPosition(), o.getRadiatedValue())
             newSphereList = [newSphere]
             for s in sphereList:
                 # we need to expand it, and if power density is too low, remove it

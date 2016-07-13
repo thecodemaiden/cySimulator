@@ -62,8 +62,7 @@ class Quadcopter(PhysicalObject):
         #self.aMotor.setAxis(1, 1, [0, 1, 0])
         self.aMotor.setAxis(2, 2, [0, 0, 1])
 
-        self.radio = Radio()
-        self.radio.rep = None
+        self.radio = Radio(self)
 
         self.accelerometer = Accelerometer(self)
 
@@ -73,32 +72,6 @@ class Quadcopter(PhysicalObject):
         #self.environment.addObject(self)
         self.pid = PidController(2, 0, 0)
         self.pid.target = [0.1,0.0,0.0]
-
-    def drawExtras(self):
-        # draw radio radius
-        renderer = self.environment.sim.ren #todo: expose this nicely
-        if self.radio.rep is not None:
-            renderer.RemoveActor(self.radio.rep)
-
-        centerPos = self.physicsBody.getPosition()
-        sphere = vtk.vtkSphereSource()
-        sphere.SetCenter(centerPos)
-        sphere.SetRadius(self.armLength*2)
-        sphere.SetPhiResolution(15)
-        sphere.SetThetaResolution(15)
-        
-
-        mapper = vtk.vtkPolyDataMapper()
-        mapper.SetInputConnection(sphere.GetOutputPort())
-
-        actor = vtk.vtkActor()
-        actor.SetMapper(mapper)
-        actor.GetProperty().SetColor(1,0,0)
-        actor.GetProperty().SetOpacity(0.1)
-
-        self.radio.rep = actor
-
-        renderer.AddActor(self.radio.rep)
 
 
     def setPosition(self, pos):
