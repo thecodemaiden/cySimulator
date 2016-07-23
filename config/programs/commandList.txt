@@ -1,5 +1,0 @@
-sensorValue(sensorName)
-var = expr
-findSensor(option=value)
-findActuator(option=value)
-actuatorCommand(actuatorName, valueList)

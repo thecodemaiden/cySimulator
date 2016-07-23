@@ -92,7 +92,6 @@
     <Folder Include="odeViz\" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="config\actuators\quadrotors.cfg" />
     <Content Include="config\actuators\radioTx.cfg" />
     <Content Include="config\actuators\speaker.cfg" />
     <Content Include="bodies\quadcopter.xml" />
