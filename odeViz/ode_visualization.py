@@ -176,7 +176,8 @@ class ODE_Visualization(VTK_Visualization):
 
     def step(self, dt):
         if self.simulationStatus == ODE_Visualization.RUNNING:
-            self.world.step(dt)
+            #self.world.step(dt)
+            self.world.quickStep(dt)
 
     def GetProperty(self, geom):
         """ return the VTK-Property for a given ode body or geometry """

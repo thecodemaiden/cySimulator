@@ -2,27 +2,27 @@
   <room name="Room1">
     <wall name="wall01">
       <center>2,2.500,7</center>
-      <size>7, 0.01, 4</size>
+      <size>7, 0.1, 4</size>
     </wall>
     <wall name="wall02">
       <center>2,-2.500, 7</center>
-      <size>7, 0.01, 4</size>
+      <size>7, 0.1, 4</size>
     </wall>
     <wall name="wall03">
       <center>5.500, 0, 7</center>
-      <size>0.01, 5, 4</size>
+      <size>0.1, 5, 4</size>
     </wall>
     <wall name="wall04">
       <center>-1.500, 0, 7</center>
-      <size>0.01, 5, 4</size>
+      <size>0.1, 5, 4</size>
     </wall>
     <wall name="wall05">
       <center>2, 0, 9.000</center>
-      <size>7, 5, 0.01</size>
+      <size>7, 5, 0.1</size>
     </wall>
     <wall name="wall06">
       <center>2, 0, 5.00</center>
-      <size>7,5, 0.01</size>
+      <size>7,5, 0.1</size>
     </wall>
     <door wall="wall06">
       <center>0, -1.5, z</center>
@@ -32,27 +32,27 @@
   <room name="Room2">
     <wall name="wall07">
       <center>-2, 2.5, -7</center>
-      <size>7, 0.01, 4</size>
+      <size>7, 0.1, 4</size>
     </wall>
     <wall name="wall08">
       <center>-2, -2.5, -7</center>
-      <size>7, 0.01, 4</size>
+      <size>7, 0.1, 4</size>
     </wall>
     <wall name="wall09">
       <center>-5.5, 0, -7</center>
-      <size> 0.01, 5, 4</size>
+      <size> 0.1, 5, 4</size>
     </wall>
     <wall name="wall10">
       <center>1.5, 0, -7</center>
-      <size>0.01, 5, 4</size>
+      <size>0.1, 5, 4</size>
     </wall>
     <wall name="wall11">
       <center>-2, 0, -9.0</center>
-      <size>7, 5, 0.01</size>
+      <size>7, 5, 0.1</size>
     </wall>
     <wall name="wall12">
       <center>-2, 0, -5.00</center>
-      <size>7,5, 0.01</size>
+      <size>7,5, 0.1</size>
     </wall>
     <door wall="wall12">
       <center>0, -1.5, z</center>
@@ -62,27 +62,27 @@
   <room name="Hallway">
     <wall name="wall13">
       <center>0, 2.5, 0</center>
-      <size>3, 0.01, 10</size>
+      <size>3, 0.1, 10</size>
     </wall>
     <wall name="wall14">
       <center>0, -2.5, 0</center>
-      <size>3, 0.01, 10</size>
+      <size>3, 0.1, 10</size>
     </wall>
     <wall name="wall15">
       <center>1.5, 0, 0</center>
-      <size>0.01, 5, 10</size>
+      <size>0.1, 5, 10</size>
     </wall>
     <wall name="wall16">
       <center>-1.5, 0, 0</center>
-      <size> 0.01, 5, 10</size>
+      <size> 0.1, 5, 10</size>
     </wall>
     <wall name="wall17">
       <center>0, 0, 5.00</center>
-      <size>3, 5, 0.01</size>
+      <size>3, 5, 0.1</size>
     </wall>
     <wall name="wall18">
       <center>0, 0, -5.00</center>
-      <size>3, 5, 0.01</size>
+      <size>3, 5, 0.1</size>
     </wall>
     <door wall="wall18">
       <center>0, -1.5, z</center>

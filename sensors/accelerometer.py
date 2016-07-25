@@ -30,7 +30,7 @@ class Accelerometer(object):
         self.accGrav = (bodyFrameAcc + gravRotated)/fs
         self.lastVel = vel
 
-    def getValue(self, withGravity=True):
+    def getValue(self, withGravity=False):
         if not withGravity:
             v = self.acc
         else:

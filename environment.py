@@ -7,6 +7,7 @@ from heatmap import Heatmap
 import numpy as np
 from odeViz.ode_visualization import ODE_Visualization
 
+from time import time
 #TODO: scale the world...
 # scaling lengths (m->cm)
 #
@@ -21,24 +22,29 @@ class MyVisualization(ODE_Visualization):
 
         self.contactGroup = ode.JointGroup()
         self.environment = env
+        self.logger = self.environment.logger
         
-        self.frametime = 1.0/60 #1/fps
+        self.frametime = 1.0/30000000 #1/fps
         self.frameAccum = 0 # when this hits >= frametime, set to 0 and repaint
 
     def execute(self, caller, event):
-        self.environment.update(self.dt)
-        n = 2
+        n = 10
         for i in range(n):
+            self.environment.update(self.dt/n)
             self.space.collide(None, self.near_callback)
             self.step(self.dt/n)
             self.contactGroup.empty()
         self.environment.drawExtras()
         if self.frameAccum >= self.frametime:
             self.update() # do not forget ...
+            self.environment.nFrames += 1
             self.frameAccum = 0
         else:
             self.updateStatus()
         self.frameAccum += self.dt
+        if self.environment.nFrames % 100 == 1:
+               self.logger.info("Effective frame rate: {}".format(self.environment.getMeanFramerate()))
+
 
     def near_callback(self, args, geom1, geom2):
         # Check if the objects do collide
@@ -53,15 +59,15 @@ class MyVisualization(ODE_Visualization):
 
 
 class Environment(object):
-    def __init__(self, dt=0.05, windowW=1024, windowH=768):
+    def __init__(self, dt=0.1, windowW=1024, windowH=768):
         super(Environment, self).__init__()
         self.logger = logging.getLogger(name='Quadsim.Environment')
         self.logger.setLevel(logging.DEBUG)
 
         self.world = ode.World()
         self.space = ode.Space()
-        self.lengthScale = 10.0
-        self.massScale = 10.0 # now a unit is 10g, not 1kg...
+        self.lengthScale = 1.0#10.0
+        self.massScale = 1.0# 10.0 # now a unit is 10g, not 1kg...
         self.forceScale = self.massScale*self.lengthScale
 
         self.dt = dt/self.lengthScale;
@@ -74,9 +80,6 @@ class Environment(object):
         self.world.setContactSurfaceLayer(0.001)
 
         self.objectList = []
-
-        self.logger = logging.getLogger(name='Quadsim.Environment')
-        self.logger.setLevel(logging.DEBUG)
 
         groundY = -10
         
@@ -152,7 +155,13 @@ class Environment(object):
         self.sim = MyVisualization(self.world, self.space, self, self.dt)
         for o in self.objectList:
             o.onVisualizationStart()
+        self.startTime = time()
+        self.nFrames = 0
         self.sim.start()
+
+    def getMeanFramerate(self):
+        now = time()
+        return float(self.nFrames)/(now - self.startTime)
 
     def update(self, dt):
         for o in self.objectList:

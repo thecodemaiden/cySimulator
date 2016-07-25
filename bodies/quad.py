@@ -14,15 +14,18 @@ class Quadcopter(PhysicalObject):
         self.logger = logging.getLogger(name='Quadsim.Quadcopter')
         self.logger.setLevel(logging.DEBUG)
 
-        armLength = float(params['armLength'])
-        bodyLength = float(params['centralBodyRadius'])
-        bodyHeight = float(params['centralBodyHeight'])
-        motorMass = float(params['motorMass'])
-        bodyMass = float(params['bodyMass'])
+        getFloatParam = lambda x: float(params[x])
 
-        ptc = float(params['propellerThrustCoefficient'])
-        mdc = float(params['motorDragCoefficient'])
-        afc = float(params['airFrictionCoefficient'])
+        armLength = getFloatParam('armLength')
+        bodyLength = getFloatParam('centralBodyRadius')
+        bodyHeight = getFloatParam('centralBodyHeight')
+        motorMass = getFloatParam('motorMass')
+        bodyMass = getFloatParam('bodyMass')
+
+        ptc = getFloatParam('propellerThrustCoefficient')
+        mdc = getFloatParam('motorDragCoefficient')
+        afc = getFloatParam('airFrictionCoefficient')
+        maxW = getFloatParam('maxPropW')
 
         ms = self.environment.massScale
         ls = self.environment.lengthScale
@@ -31,6 +34,8 @@ class Quadcopter(PhysicalObject):
         self.propellerThrustCoefficient = ptc*fs
         self.motorDragCoefficient = mdc*fs
         self.airFrictionCoefficient = afc*fs
+
+        self.maxPropellerW = maxW*fs
 
         self.totalMass = (bodyMass + 4*motorMass)*ms
        
@@ -150,7 +155,7 @@ class Quadcopter(PhysicalObject):
                 self.motorDragCoefficient * (-self.motorW[0] + self.motorW[1] - self.motorW[2] + self.motorW[3]),
                 self.armLength * self.propellerThrustCoefficient * (self.motorW[1] - self.motorW[3])] 
 
-    def pidOutputToMotors(self, err):
+    def pidOutputToMotors(self, err, total):
         # shamelessly ripped from MATLAB code
         inertia = self.physicsBody.getMass().I
         e1 = err[0]; e2 = err[1]; e3 = err[2]; 
@@ -159,8 +164,13 @@ class Quadcopter(PhysicalObject):
         L = self.armLength
         b = self.motorDragCoefficient
 
-        each = 48000 # todo - calculate hover W2
+        each = total/4.0
 
+        if each > self.maxPropellerW:
+            each = self.maxPropellerW
+        if each < 0:
+            each = 0
+   
         motorVals = [0,0,0,0]
         motorVals[0] = each -(-2 * b * e1 * Ix + e3 * Iz * k * L)/(4 * b * k * L);
         motorVals[1] = each + e3 * Iz/(4 * b) + (e2 * Iy)/(2 * k * L);
@@ -169,10 +179,25 @@ class Quadcopter(PhysicalObject):
 
         return motorVals
 
+    def totalThrustNeeded(self):
+        R = self.physicsBody.getRotation()
+
+        r  = arctan2(R[7], R[8]);     #phi
+        y = arcsin(-R[6]);            #theta
+        p   = arctan2(R[3], R[0]);    #psi
+
+        theta = array([r,p,y])
+        total = self.totalMass*-self.environment.world.getGravity()[1]*self.environment.forceScale
+        total = total/self.propellerThrustCoefficient
+        total = total/(cos(r)*cos(p))
+
+        return total
+
+
     def update(self,dt):
 
         pid_error = self.pid.update(self, dt)
-        thrust_adj = self.pidOutputToMotors(pid_error)
+        thrust_adj = self.pidOutputToMotors(pid_error, self.totalThrustNeeded())
         self.motorW = thrust_adj
 
         # apply thrust and yaw torque at each prop
