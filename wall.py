@@ -1,5 +1,6 @@
 from ode import GeomBox
 from my_object import PhysicalObject
+
 class Wall(PhysicalObject):
     """A wall in the environment, which may contain rectangular holes"""
     def __init__(self, size, center_pos,  environment):
@@ -20,11 +21,14 @@ class Wall(PhysicalObject):
         self.geom.setPosition(self.centerPos)
 
     def onVisualizationStart(self):
-        p = self.environment.getGeomVizProperty(self.geom)
-        p.SetColor(self.color)
-        p.SetOpacity(0.1)
+        g = self.environment.manager.visualizer.getGraphics(self.geom)
+        g.color = self.color
+        g.opacity = 0.1
+        #p = self.environment.getGeomVizProperty(self.geom)
+        #p.SetColor(self.color)
+        #p.SetOpacity(0.1)
         #p.SetRepresentationToWireframe()
-        p.EdgeVisibilityOn()
+        #p.EdgeVisibilityOn()
     
     @classmethod
     def cutHoleInWall(cls, wall, hole_size, hole_center):

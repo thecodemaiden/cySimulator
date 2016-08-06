@@ -12,7 +12,7 @@ class Quadcopter(PhysicalObject):
         environment = params['environment']
         super(Quadcopter, self).__init__(environment)
         self.logger = logging.getLogger(name='Quadsim.Quadcopter')
-        self.logger.setLevel(logging.DEBUG)
+        #self.logger.setLevel(logging.DEBUG)
 
         getFloatParam = lambda x: float(params[x])
 
@@ -242,9 +242,6 @@ class PidController(object):
         #get thetadot later...
         #thetadot = array(copter.getAngularVelocity())
         fs = copter.environment.forceScale
-
-        # WTF is hapenning????
-        #totalW2 = copter.totalMass * 9.81*fs/ (copter.propellerThrustCoefficient * cos(r) * cos(p))
 
         nowError = self.target - theta
         dError = (nowError - self.lastError)/dt

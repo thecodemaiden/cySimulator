@@ -1,3 +1,5 @@
+import gc
+
 class PhysicalObject(object):
     """Common methods for objects that are part of the physical simulation"""
     def __init__(self, environment):
@@ -16,6 +18,8 @@ class FieldObject(object):
     def getRadiatedValue(self):
         pass
     def getPosition(self):
+        pass
+    def getMaxRadiatedValue(self):
         pass
 
 class FieldSphere(object):
@@ -41,6 +45,7 @@ class Field(object):
         self.objects[o] = []
 
     def update(self,dt):
+        gc.disable()
         for o,sphereList in self.objects.items():
             newSphere = FieldSphere(o.getPosition(), o.getRadiatedValue())
             newSphereList = [newSphere]
@@ -50,7 +55,8 @@ class Field(object):
                 s.intensity = s.totalPower/(s.radius**2)
                 if s.intensity >= self.minI:
                     newSphereList.append(s)
-            self.objects[o] = newSphereList 
+            self.objects[o] = newSphereList
+        gc.enable()
 
 
 

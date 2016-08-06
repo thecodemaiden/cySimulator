@@ -24,6 +24,12 @@
     <PtvsTargetsFile>$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets</PtvsTargetsFile>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="anim\demo_anim.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="anim\__init__.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="bodies\quad.py" />
     <Compile Include="bodies\__init__.py">
       <SubType>Code</SubType>
@@ -69,38 +75,33 @@
     <Compile Include="sensors\__init__.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="vpyViz\ode_objects.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="vpyViz\ode_visualization.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="vpyViz\__init__.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="wall.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="environment.py" />
-    <Compile Include="odeViz\ode_helper.py" />
-    <Compile Include="odeViz\ode_objects.py" />
-    <Compile Include="odeViz\ode_visualization.py" />
-    <Compile Include="odeViz\__init__.py" />
     <Compile Include="sim.py" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="anim\" />
     <Folder Include="bodies\" />
-    <Folder Include="config\actuators\" />
     <Folder Include="layout\" />
-    <Folder Include="config\programs\" />
-    <Folder Include="config\sensors\" />
     <Folder Include="experimental\" />
-    <Folder Include="config\" />
     <Folder Include="programs\" />
     <Folder Include="sensors\" />
-    <Folder Include="odeViz\" />
+    <Folder Include="vpyViz\" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="config\actuators\radioTx.cfg" />
-    <Content Include="config\actuators\speaker.cfg" />
     <Content Include="bodies\quadcopter.xml" />
     <Content Include="layout\example_layout.xml" />
-    <Content Include="config\programs\commandList.txt" />
-    <Content Include="config\sensors\accelerometer.cfg" />
-    <Content Include="config\sensors\gyroscope.cfg" />
-    <Content Include="config\sensors\microphone.cfg" />
-    <Content Include="config\sensors\radioRx.cfg" />
   </ItemGroup>
   <Import Project="$(PtvsTargetsFile)" Condition="Exists($(PtvsTargetsFile))" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" Condition="!Exists($(PtvsTargetsFile))" />

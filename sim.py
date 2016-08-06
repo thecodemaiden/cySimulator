@@ -1,19 +1,25 @@
-from vtk import *
-from environment import Environment
 from wall import Wall
 import logging
 from random import uniform
 from config_reader import ConfigReader
 from object_types import Field    
+from visual import scene, rate
+from vpyViz.ode_visualization import Vpy_Visualization
+from environment import PhysicalEnvironment, SimulationManager
 
 if __name__ == '__main__':
     logger = logging.getLogger("Quadsim")
     hndlr = logging.FileHandler("sim.log", mode='w')
     hndlr.setFormatter(logging.Formatter(fmt='%(name)s[%(levelname)s]: %(message)s'))
     logger.addHandler(hndlr)
+    logger.setLevel(logging.ERROR)
 
-    e = Environment()
-    rf = Field(324, 1e-9)
+    sim = SimulationManager(1.0/30)
+    e = sim.physicalEnvironment
+    sim.setVisualizer(Vpy_Visualization)
+    v = sim.visualizer
+  
+    rf = Field(1, 1e-9)
     e.addField('RF', rf)
     cr = ConfigReader(e)
 
@@ -41,13 +47,18 @@ if __name__ == '__main__':
         y = uniform(-roomDims[1]/2 + .15, +roomDims[1]/2 - .15) # keep copters out of the walls
         z = uniform(-roomDims[2]/2 + .15, +roomDims[2]/2 - .15) # keep copters out of the walls
         q.setPosition((x,y,z))
-        print('Copter at {}, {}, {}'.format(x,y,z))
+        logger.debug('Copter at {}, {}, {}'.format(x,y,z))
 
     walls = cr.readLayoutFile(layout_path)
     for w in walls:
         e.addObject(w)
-  
 
-    e.start()
+    sim.start()
+
+    scene.mouse.getclick()
+    scene.autoscale = False
+    sim.runloop()
+ 
+
 
 

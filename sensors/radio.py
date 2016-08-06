@@ -15,4 +15,7 @@ class Radio(FieldObject):
     def getPosition(self):
         return self.device.physicsBody.getPosition()
 
+    def getMaxRadiatedValue(self):
+        return self.tx_power
+
 

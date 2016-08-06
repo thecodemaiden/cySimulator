@@ -5,59 +5,28 @@ from operator import eq
 import logging
 
 class Vpy_Visualization():
-    def __init__(self, dt):
-        self.logger = logging.getLogger(name='Quadsim.Environment')
-
-        self.world = ode.World()
-        self.space = ode.Space()
-        self.dt = dt
+    def __init__(self, physicalEnvironment):
+        self.logger = logging.getLogger(name='Quadsim.Visualizer')
+        self.physEnv = physicalEnvironment
         self.obj = set()
-        self.fieldList = {}
-        self.contactGroup = ode.JointGroup()
-        self.lengthScale = 1.0
-        self.massScale = 1.0
-        self.forceScale = self.lengthScale*self.massScale
+        self.simTime = 0.0
 
-    def addField(self, fieldName, f):
-        self.fieldList[fieldName] = {'field':f, 'display':{}}
-
-    def addFieldObject(self, fieldName, o):
-        # TODO: error behavior
-        fieldInfo = self.fieldList[fieldName]
-        fieldInfo['field'].addObject(o)
 
     def create(self):
-        for i in range(self.space.getNumGeoms()):
-            geom = self.space.getGeom(i)
+        space = self.physEnv.space
+        for i in range(space.getNumGeoms()):
+            geom = space.getGeom(i)
             self.addGeom(geom)
 
-    def step(self, dt):
-        self.space.collide(None, self.near_callback)
-        self.world.quickStep(dt)
-        self.contactGroup.empty()
-
-
-    def update(self):
+    def update(self, dt):
         for obj in self.obj:
             obj.update()
-        self.step(self.dt)
+        self.simTime += dt
 
     def getGraphics(self, geom):
         for o in self.obj:
             if eq(o.geom, geom):
                 return o.src
-
-    def near_callback(self, args, geom1, geom2):
-        # Check if the objects do collide
-        contacts = ode.collide(geom1, geom2)
-
-        # Create contact joints
-        for c in contacts:
-            c.setBounce(0.7)
-            c.setMu(500)
-            j = ode.ContactJoint(self.world, self.contactGroup, c)
-            j.attach(geom1.getBody(), geom2.getBody())
-
 
     def extractObj(self, geom, ident):
         obj = None
@@ -97,9 +66,4 @@ class Vpy_Visualization():
         if obj:
             self.obj.add(obj)
 
-    def runloop(self):
-        while 1:
-            v.rate(100)
-            if v.scene.mouse.events:
-                pass
             

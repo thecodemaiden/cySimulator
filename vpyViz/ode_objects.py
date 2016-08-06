@@ -66,50 +66,6 @@ class Vpy_Object():
             
             self.src.rotate(angle=r.angle, axis=r.axis)
 
-
-
-class Vpy_Transform(Vpy_Object):
-    """ VTK visualization of geom contained in transform geom """
-    def __init__(self, geom, innerObj, ident=None):
-       self.inner = innerObj
-       self.src = self.inner.src;
-       self.act = self.inner.act;
-
-       self.SetMatrix = self.inner.trans.SetMatrix
-       
-       self.geom = geom
-       self.ident = ident
-
-    def getPosition(self):
-        parentBody = self.geom.getBody()
-        pr = parentBody.getRotation() #self.geom.getRotation()
-        pr = numpy.matrix(pr).reshape((3,3))
-        pp = parentBody.getPosition()
-        pp = numpy.matrix(pp).reshape((3,1))
-
-        lp = numpy.matrix(self.inner.geomgetPosition()).reshape((3,1))
-        wp = pr*lp
-        wp = wp + pp
-
-        return wp.A1
-
-
-    def getRotation(self):
-        parentBody = self.geom.getBody()
-        R1 = parentBody.getRotation() #self.geom.getRotation()
-        R2 = self.inner.geomgetRotation()
-
-        R1 = numpy.matrix(R1).reshape((3,3))
-        R2 = numpy.matrix(R2).reshape((3,3))
-
-        R = (R1*R2).A1
-
-        return R.tolist()
-
-    def isEnabled(self):
-        return self.inner.isEnabled()
-
-
 class Vpy_Box(Vpy_Object):
     """ VTK visualization of class ode.GeomBox  """
     def __init__(self, geom, ident=None):
@@ -121,7 +77,6 @@ class Vpy_Box(Vpy_Object):
         self.src.height = ysize
         self.src.width = zsize
         Vpy_Object.__init__(self, geom, ident)
-        self.src.opacity=0.1
 
 
 
@@ -131,7 +86,6 @@ class Vpy_Ray(Vpy_Object):
     def __init__(self, geom, ident=None):
 
         self.src = v.arrow()
-        Vpy_Object.__init__(self, geom, ident, ".GetOutput()")
 
         length = self.geom.getLength()
 
@@ -140,9 +94,12 @@ class Vpy_Ray(Vpy_Object):
 
         self.src.pos = (px,py,pz)
         self.src.axis = (rx,ry,rz)
+        self.src.shaftwidth = 0.1
+        Vpy_Object.__init__(self, geom, ident)
+
 
     def norm(self, vx, vy, vz, length=1):
-        norm = (vx**2 + vy**2 + vz**2)**0.5
+        norm = numpy.linalg.norm([vx,vy,vz])
 
         vx = (vx/norm) * length
         vy = (vy/norm) * length
@@ -161,43 +118,6 @@ class Vpy_Ray(Vpy_Object):
             self.src.axis = (rx,ry,rz)
 
 
-class Vpy_TriMesh(Vpy_Object):
-    """ VTK visualization of class ode.GeomTriMesh  """
-    def __init__(self, geom, ident=None):
-
-        self.src = vtkPolyData()
-        Vpy_Object.__init__(self, geom, ident, "")
-
-        points = vtkPoints()
-        vertices = vtkCellArray()
-
-        for i in range(geom.getTriangleCount()):
-            (p0, p1, p2) = geom.getTriangle(i)
-
-            id0 = points.InsertNextPoint(p0)
-            id1 = points.InsertNextPoint(p1)
-            id2 = points.InsertNextPoint(p2)
-
-            vertices.InsertNextCell(3)
-            vertices.InsertCellPoint(id0)
-            vertices.InsertCellPoint(id1)
-            vertices.InsertCellPoint(id2)
-
-        self.src.SetPoints(points)
-        self.src.SetPolys(vertices)
-
-
-#    def update(self):
-#        if self.isEnabled():
-#            (x,y,z) = self.getPosition()
-#            R = self.getRotation()
-#
-#            self.SetMatrix([R[0], R[1], R[2], x,
-#                            R[3], R[4], R[5], y,
-#                            R[6], R[7], R[8], z,
-#                            0,    0,    0,    1])
-
-
 class Vpy_Sphere(Vpy_Object):
     """ VTK visualization of class ode.GeomSphere  """
     def __init__(self, geom, ident=None):
@@ -214,112 +134,24 @@ class Vpy_Cylinder(Vpy_Object):
     def __init__(self, geom, ident=None):
         self.src = v.cylinder()
 
-        Vpy_Object.__init__(self, geom, ident)
-
         (radius, height) = self.geom.getParams()
 
-        self.src.SetRadius(radius)
-        self.src.SetHeight(height)
-
-        self.src.SetResolution(20)
-
-    def update(self):
-        if self.isEnabled():
-            Vpy_Object.update(self)
-
-
-class Vpy_Capsule_imp(Vpy_Object):
-    """ VTK visualization of class ode.GeomCapsule  """
-    def __init__(self, geom, ident=None):
-
-        self.src = vtkAppendPolyData()
-
+        self.src.radius = radius
+        self.src.axis = (0,0,height)
         Vpy_Object.__init__(self, geom, ident)
-
-        (radius, height) = geom.getParams()
-
-        cylinder = vtkCylinderSource()
-        cylinder.SetResolution(20)
-        cylinder.SetRadius(radius)
-        cylinder.SetHeight(height)
-
-        sphere_1 = vtkSphereSource()
-        sphere_1.SetThetaResolution(20)
-        sphere_1.SetPhiResolution(11)
-        sphere_1.SetRadius(radius)
-        sphere_1.SetCenter(0, 0.5*height, 0)
-
-        sphere_2 = vtkSphereSource()
-        sphere_2.SetThetaResolution(20)
-        sphere_2.SetPhiResolution(11)
-        sphere_2.SetRadius(radius)
-        sphere_2.SetCenter(0, -0.5*height, 0)
-
-        self.src.AddInput(cylinder.GetOutput())
-        self.src.AddInput(sphere_1.GetOutput())
-        self.src.AddInput(sphere_2.GetOutput())
-
-    def update(self):
-        if self.isEnabled():
-            Vpy_Object.update(self)
 
 
 class Vpy_Capsule(Vpy_Object):
     """ VTK visualization of class ode.GeomCapsule  """
     def __init__(self, geom, ident=None):
 
-        self.src = vtkContourFilter()
+        self.src = v.frame()
 
         Vpy_Object.__init__(self, geom, ident)
 
         (radius, height) = geom.getParams()
 
-        cylinder = vtkCylinder()
-        cylinder.SetRadius(radius)
-
-        vertPlane = vtkPlane()
-        vertPlane.SetOrigin(0, height/2, 0)
-        vertPlane.SetNormal(0, 1, 0)
-
-        basePlane = vtkPlane()
-        basePlane.SetOrigin(0, -height/2, 0)
-        basePlane.SetNormal(0, -1, 0)
-
-        sphere_1 = vtkSphere()
-        sphere_1.SetCenter(0, -height/2, 0)
-        sphere_1.SetRadius(radius)
-
-        sphere_2 = vtkSphere()
-        sphere_2.SetCenter(0, height/2, 0)
-        sphere_2.SetRadius(radius)
-
-        # Combine primitives, Clip the cone with planes.
-        cylinder_fct = vtkImplicitBoolean()
-        cylinder_fct.SetOperationTypeToIntersection()
-        cylinder_fct.AddFunction(cylinder)
-        cylinder_fct.AddFunction(vertPlane)
-        cylinder_fct.AddFunction(basePlane)
-
-        # Take a bite out of the ice cream.
-        capsule = vtkImplicitBoolean()
-        capsule.SetOperationTypeToUnion()
-        capsule.AddFunction(cylinder_fct)
-        capsule.AddFunction(sphere_1)
-        capsule.AddFunction(sphere_2)
-
-        capsule_fct = vtkSampleFunction()
-        capsule_fct.SetImplicitFunction(capsule)
-        capsule_fct.ComputeNormalsOff()
-        capsule_fct.SetModelBounds(-height-radius, height+radius,
-                                   -height-radius, height+radius,
-                                   -height-radius, height+radius)
-
-        self.src.SetInputConnection(capsule_fct.GetOutputPort())
-        self.src.SetValue(0, 0.0)
-
-    def update(self):
-        if self.isEnabled():
-            Vpy_Object.update(self)
+        ### TODO: finish capsule?
 
 
 
@@ -376,3 +208,40 @@ class Vpy_Plane(Vpy_Object):
         (a, b, c), d = self.geom.getParams()
         h = d/(a**2 + b**2 + c**2)
         return [a*h, b*h, c*h]
+
+class Vpy_TriMesh(Vpy_Object):
+    """ VTK visualization of class ode.GeomTriMesh  """
+    def __init__(self, geom, ident=None):
+
+        self.src = vtkPolyData()
+        Vpy_Object.__init__(self, geom, ident, "")
+
+        points = vtkPoints()
+        vertices = vtkCellArray()
+
+        for i in range(geom.getTriangleCount()):
+            (p0, p1, p2) = geom.getTriangle(i)
+
+            id0 = points.InsertNextPoint(p0)
+            id1 = points.InsertNextPoint(p1)
+            id2 = points.InsertNextPoint(p2)
+
+            vertices.InsertNextCell(3)
+            vertices.InsertCellPoint(id0)
+            vertices.InsertCellPoint(id1)
+            vertices.InsertCellPoint(id2)
+
+        self.src.SetPoints(points)
+        self.src.SetPolys(vertices)
+
+
+#    def update(self):
+#        if self.isEnabled():
+#            (x,y,z) = self.getPosition()
+#            R = self.getRotation()
+#
+#            self.SetMatrix([R[0], R[1], R[2], x,
+#                            R[3], R[4], R[5], y,
+#                            R[6], R[7], R[8], z,
+#                            0,    0,    0,    1])
+
