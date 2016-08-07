@@ -1,4 +1,4 @@
-from object_types import FieldObject
+from field_types import FieldObject
 
 class Radio(FieldObject):
     """A very simple radio implementation"""

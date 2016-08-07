@@ -1,7 +1,7 @@
 import ode
 import logging
 
-from object_types import Field
+from field_types import Field
 from heatmap import Heatmap
 import numpy as np
 

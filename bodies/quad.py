@@ -1,11 +1,13 @@
-from vtk import *
 import ode
 from numpy import sqrt, array, arctan2, arcsin, cos, sum, arccos
 from numpy.linalg import norm
 import logging
-from sensors import Radio, Accelerometer
+from sensors import SemanticRadio, Accelerometer
 from object_types import PhysicalObject
 from time import time 
+
+RADIO_ADDR=0x7E7E7E7EL
+RADIO_CHAN=17
 
 class Quadcopter(PhysicalObject):
     def __init__(self, params):
@@ -52,6 +54,8 @@ class Quadcopter(PhysicalObject):
         self.motorMass = motorMass*ms
         self.bodyMass = bodyMass*ms
 
+        self.time = 0
+
         self.name = "Quad1"
         self.motorW = [0,0,0,0]
 
@@ -64,14 +68,12 @@ class Quadcopter(PhysicalObject):
         self.aMotor.setMode(ode.AMotorEuler)
         self.aMotor.attach(self.physicsBody, None)
         self.aMotor.setAxis(0, 1, [1, 0, 0])
-        #self.aMotor.setAxis(1, 1, [0, 1, 0])
         self.aMotor.setAxis(2, 2, [0, 0, 1])
 
-        self.radio = Radio(self)
+        self.radio = SemanticRadio(self, RADIO_ADDR, RADIO_CHAN)
 
         self.accelerometer = Accelerometer(self)
 
-        self.startTime = None
         self.moved = False
 
         #self.environment.addObject(self)
@@ -195,6 +197,10 @@ class Quadcopter(PhysicalObject):
 
 
     def update(self,dt):
+
+        # all PID and radio stuff will move to programs
+        if self.time % 2.5 < dt:
+            self.radio.writePacket(RADIO_ADDR, RADIO_CHAN, "TEST")
 
         pid_error = self.pid.update(self, dt)
         thrust_adj = self.pidOutputToMotors(pid_error, self.totalThrustNeeded())

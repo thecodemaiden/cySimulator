@@ -2,7 +2,7 @@ from wall import Wall
 import logging
 from random import uniform
 from config_reader import ConfigReader
-from object_types import Field    
+from field_types import VectorField, SemanticField   
 from visual import scene, rate
 from vpyViz.ode_visualization import Vpy_Visualization
 from environment import PhysicalEnvironment, SimulationManager
@@ -19,8 +19,11 @@ if __name__ == '__main__':
     sim.setVisualizer(Vpy_Visualization)
     v = sim.visualizer
   
-    rf = Field(1, 1e-9)
+    rf = VectorField(1, 1e-9)
     e.addField('RF', rf)
+
+    rf_ez = SemanticField(3e8,1e-9)
+    e.addField('RF_Semantic', rf_ez)
     cr = ConfigReader(e)
 
     layout_path = 'layout/example_layout.xml'

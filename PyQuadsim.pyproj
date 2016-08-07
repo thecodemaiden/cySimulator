@@ -24,14 +24,11 @@
     <PtvsTargetsFile>$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets</PtvsTargetsFile>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="anim\demo_anim.py">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="anim\__init__.py">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="bodies\quad.py" />
     <Compile Include="bodies\__init__.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="field_types.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="heatmap.py">
@@ -72,6 +69,9 @@
     <Compile Include="sensors\radio.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="sensors\semantic_radio.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="sensors\__init__.py">
       <SubType>Code</SubType>
     </Compile>
@@ -91,7 +91,6 @@
     <Compile Include="sim.py" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="anim\" />
     <Folder Include="bodies\" />
     <Folder Include="layout\" />
     <Folder Include="experimental\" />
