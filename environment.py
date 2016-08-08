@@ -128,7 +128,7 @@ class PhysicalEnvironment():
             j = ode.ContactJoint(self.world, self.contactGroup, c)
             j.attach(geom1.getBody(), geom2.getBody())
 
-class ComputationEnvironment():
+class ComputeEnvironment():
     def __init__(self, manager):
         self.taskList = []
         self.manager = manager
@@ -143,7 +143,7 @@ class SimulationManager():
     """ Contains the physical + computational simulation loops, and any visualization"""
     def __init__(self, dt):
         self.physicalEnvironment = PhysicalEnvironment(self)
-        self.computeEnvironment = ComputationEnvironment(self)
+        self.computeEnvironment = ComputeEnvironment(self)
         self.draw = True
         self.visualizer = None
         self.dt = dt;

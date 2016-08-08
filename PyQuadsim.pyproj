@@ -101,6 +101,7 @@
   <ItemGroup>
     <Content Include="bodies\quadcopter.xml" />
     <Content Include="layout\example_layout.xml" />
+    <Content Include="sim_setup.xml" />
   </ItemGroup>
   <Import Project="$(PtvsTargetsFile)" Condition="Exists($(PtvsTargetsFile))" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" Condition="!Exists($(PtvsTargetsFile))" />

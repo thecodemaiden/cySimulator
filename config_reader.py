@@ -3,6 +3,10 @@ from wall import Wall
 from collections import defaultdict
 import xml.etree.ElementTree as etree
 
+from environment import PhysicalEnvironment, ComputeEnvironment, SimulationManager
+import logging
+from random import uniform
+
 # if there is a better way to access all bodies, please do tell...
 import bodies
 
@@ -11,7 +15,8 @@ class ConfigReader(object):
     def __init__(self, environment):
         self.environment = environment
 
-    def _mixedToFloats(self, l):
+    @classmethod
+    def _mixedToFloats(cls, l):
         out = []
         for i in l:
             try:
@@ -20,11 +25,11 @@ class ConfigReader(object):
                 out.append(i)
         return out
 
-    def _extractListStr(self, l):
+    @classmethod
+    def _extractListStr(cls, l):
         l = l.replace(' ', '')
 
         return l.split(',')
-
 
     def readLayoutFile(self, filename):
         layoutTree = etree.parse(filename)
@@ -86,6 +91,44 @@ class ConfigReader(object):
             # todo: add type to xml and cast here
         newBody = bodyClass(params)
         return newBody
+
+    @classmethod
+    def readSimulationFile(cls, filename):
+        bodyTree = etree.parse(filename)
+        root = bodyTree.getroot()
+
+        logFile = root.get('log')
+        if logFile is not None:
+               logger = logging.getLogger("Quadsim")
+               hndlr = logging.FileHandler(logFile, mode='w')
+               hndlr.setFormatter(logging.Formatter(fmt='%(name)s[%(levelname)s]: %(message)s'))
+               logger.addHandler(hndlr)
+
+        sim = SimulationManager(1.0/30)
+        e = sim.physicalEnvironment
+        cr = ConfigReader(e) # TODO: these should all be class methods...?
+        
+        # now read the layout file
+        layout = root.find('layout')
+        layoutFile = layout.attrib['file']
+        startSpace = cls._extractStringList(layout.find('startRegion').text)
+        startSpace = [float(p) for p in startSpace]
+
+        cr.readLayoutFile(layoutFile)
+
+        # now add the devices
+        slack = 0.1
+        randomHalf = lambda c: uniform(-c/2.0 + slack, c/2.0 - slack)
+        deviceTypes = root.findall('device')
+        for dv in deviceTypes:
+            bodyFile = dv.find('body').text
+            programFile = dv.find('program').text
+
+
+        
+
+
+
 
 
 

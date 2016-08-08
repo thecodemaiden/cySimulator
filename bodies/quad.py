@@ -15,6 +15,7 @@ class Quadcopter(PhysicalObject):
         super(Quadcopter, self).__init__(environment)
         self.logger = logging.getLogger(name='Quadsim.Quadcopter')
         #self.logger.setLevel(logging.DEBUG)
+        self.sensors = {}
 
         getFloatParam = lambda x: float(params[x])
 
@@ -70,9 +71,10 @@ class Quadcopter(PhysicalObject):
         self.aMotor.setAxis(0, 1, [1, 0, 0])
         self.aMotor.setAxis(2, 2, [0, 0, 1])
 
-        self.radio = SemanticRadio(self, RADIO_ADDR, RADIO_CHAN)
-
-        self.accelerometer = Accelerometer(self)
+        r = SemanticRadio(self, {'address':RADIO_ADDR, 'channel':RADIO_CHAN})
+        a = Accelerometer(self, {})
+        self.addSensor('radio', r)
+        self.addSensor('acc', a)
 
         self.moved = False
 
@@ -80,6 +82,8 @@ class Quadcopter(PhysicalObject):
         self.pid = PidController(2, 0, 0)
         self.pid.target = [0.1,0.0,0.0]
 
+    def addSensor(self, name, s):
+        self.sensors[name] = s
 
     def setPosition(self, pos):
         x,y,z = [self.environment.lengthScale*c for c in pos]
@@ -110,42 +114,6 @@ class Quadcopter(PhysicalObject):
         secondArmGeom.setBody(mainBody)
 
         self.geomList = [firstArmGeom, secondArmGeom]
-        self.physicsBody = mainBody
-
-        
-
-    def makePhysicsBody(self):
-        physicsWorld = self.environment.world
-        space = self.environment.space
-
-        self.geomList = []
-
-        offset = self.armLength + float(self.bodyLength) / 2.0
-
-        mainBody = ode.Body(physicsWorld)
-        bodyMass = ode.Mass()
-        bodyMass.setCylinderTotal(self.bodyMass, 3, self.bodyLength, self.bodyHeight)
-        
-        geom = ode.GeomCylinder(space, self.bodyLength, self.bodyHeight)
-        geom.setBody(mainBody)    
-        geom.setOffsetRotation((1,0,0,0,0,-1,0,1,0))
-        self.geomList.append(geom)
-
-        for i in range(4):
-            mass = ode.Mass()
-            mass.setCylinderTotal(self.motorMass,3, self.motorRadius, self.motorHeight)
-            mass.translate(self.armOffsets[i])
-            bodyMass.add(mass)
-
-            g = ode.GeomCylinder(space, self.motorRadius, self.motorHeight)
-            g.setBody(mainBody)
-
-            g.setOffsetPosition(self.armOffsets[i])
-            g.setOffsetRotation((1,0,0,0,0,-1,0,1,0))
-
-            self.geomList += [g]
-
-        mainBody.setMass(bodyMass)
         self.physicsBody = mainBody
 
     def calculateThrust(self):
@@ -198,9 +166,13 @@ class Quadcopter(PhysicalObject):
 
     def update(self,dt):
 
+        for dv in self.sensors.values():
+            dv.update(dt)
+
+        r = self.sensors['radio']
         # all PID and radio stuff will move to programs
         if self.time % 2.5 < dt:
-            self.radio.writePacket(RADIO_ADDR, RADIO_CHAN, "TEST")
+            r.writePacket(RADIO_ADDR, RADIO_CHAN, "TEST")
 
         pid_error = self.pid.update(self, dt)
         thrust_adj = self.pidOutputToMotors(pid_error, self.totalThrustNeeded())
@@ -219,8 +191,7 @@ class Quadcopter(PhysicalObject):
         airFriction = (array(v)*-self.airFrictionCoefficient*vMag)
         self.physicsBody.addForce(airFriction)
 
-        self.accelerometer.update(dt)
-        v = self.accelerometer.getValue()
+        v = self.sensors['acc'].getValue()
 
         self.logger.info('{}.acc x: {}\ty: {}\tz: {}'.format(self.name, *v))
        

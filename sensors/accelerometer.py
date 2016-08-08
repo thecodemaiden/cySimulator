@@ -2,7 +2,7 @@ import numpy as np
 
 class Accelerometer(object):
     ''' Returns the body-frame accelerometer reading, including (default) or excluding gravity '''
-    def __init__(self, entity):
+    def __init__(self, entity, params):
         self.entity = entity
         self.lastVel = self.entity.physicsBody.getLinearVel()
         self.acc = np.full((1,3), 0.0)

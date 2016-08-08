@@ -1,5 +1,7 @@
 from field_types import FieldObject
 
+from random import randint
+
 class RadioPacket:
     def __init__(self, address, channel, msg):
         self.address = address
@@ -8,16 +10,27 @@ class RadioPacket:
 
 class SemanticRadio(FieldObject):
     """ A 'radio wave' representation where symbols are associated with wavefronts"""
-    def __init__(self, onDevice, address, channel, rx_sens = 1e-10, tx_pow = 0.01):
-        self.device = onDevice
-        self.rx_sensitivity = rx_sens # in W
-        self.tx_power = tx_pow
+    def __init__(self, entity, params):
+        self.device = entity
+
+        self.rx_sensitivity = float(params.get('rx_sens', 1e-10)) # in W
+        self.tx_power = float(params.get('tx_pow', 0.01))
         self.inBuffer = [] # list of RadioPackets
         self.outBuffer = []
-        self.channel = channel
-        self.address = address
+        self.channel = int(params['channel'])
+        if params.get('address') == None:
+            # make up an address, hope it doesn't collide
+            add = randint(0xa0a0a0a0a0L, 0xfefefefefeL)
+        else:
+            add = long(params['address'])
+        self.address = add
+
 
         self.device.environment.addFieldObject('RF_Semantic', self)
+
+    def update(self, dt):
+        # TODO: tx power up time? rx delays?
+        pass
 
     def detectField(self, fieldValue):
         """Register any readings, if necessary. fieldvalue is a FieldSphere """
