@@ -7,8 +7,10 @@ from environment import PhysicalEnvironment, ComputeEnvironment, SimulationManag
 import logging
 from random import uniform
 
-# if there is a better way to access all bodies, please do tell...
+# if there is a better way to access all bodies/sensors/etc, please do tell...
 import bodies
+import sensors
+import field_types
 
 class ConfigReader(object):
     """Reads the various option files"""
@@ -108,21 +110,66 @@ class ConfigReader(object):
         e = sim.physicalEnvironment
         cr = ConfigReader(e) # TODO: these should all be class methods...?
         
+        # create the fields
+        fieldDescs = root.findall('field')
+        for f in fieldDescs:
+            name = f.attrib['name']
+            className = f.attrib['class']
+            try:
+                fieldClass = getattr(field_types, className)
+                params = f.findall('param')
+                attrInfo = {}
+                for p in params:
+                    attrInfo.update(p.attrib)
+                f = fieldClass(**attrInfo)
+                e.addField(name, f)
+            except AttributeError:
+                pass # TODO: log an error?
+
         # now read the layout file
         layout = root.find('layout')
         layoutFile = layout.attrib['file']
-        startSpace = cls._extractStringList(layout.find('startRegion').text)
+        startSpace = cls._extractListStr(layout.find('startRegion').text)
         startSpace = [float(p) for p in startSpace]
 
-        cr.readLayoutFile(layoutFile)
+        walls = cr.readLayoutFile(layoutFile)
+        for w in walls:
+            e.addObject(w)
 
         # now add the devices
         slack = 0.1
         randomHalf = lambda c: uniform(-c/2.0 + slack, c/2.0 - slack)
         deviceTypes = root.findall('device')
         for dv in deviceTypes:
-            bodyFile = dv.find('body').text
-            programFile = dv.find('program').text
+            bodyFile = dv.findtext('body')
+            programFile = dv.findtext('program')
+            namePrefix = dv.attrib.get('namePrefix', 'Device')
+            sensorSpecs = dv.findall('sensor')
+            sensorList = {}
+            for s in sensorSpecs:
+                className = s.attrib['class']
+                try:
+                    sensorClass = getattr(sensors, className)
+                    name = s.attrib['name']
+                    # TODO: parse teh params
+                    sensorList[name] = sensorClass
+                except AttributeError:
+                    pass
+            nDevices = int(dv.findtext('count', 1))
+            for i in range(nDevices):
+                deviceBody = cr.readBodyFile(bodyFile)
+                # todo: what about teh program
+                devName = '{}_{:3d}'.format(namePrefix, i)
+                deviceBody.name = devName
+                for sn, s in sensorList.items():
+                    deviceBody.addSensor(sn, s(deviceBody, {}))
+                e.addObject(deviceBody)
+                pos = [randomHalf(p) for p in startSpace]
+                deviceBody.setPosition(pos)
+
+        return sim
+
+
 
 
         

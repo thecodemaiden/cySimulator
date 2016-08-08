@@ -27,7 +27,7 @@ class Field(object):
     def __init__(self, propSpeed):
         # TODO: replace with sphereList, mapping sphere to producing object
         self.objects = {}
-        self.speed = propSpeed
+        self.speed = float(propSpeed)
 
     def addObject(self, o):
         self.objects[o] = []
@@ -93,12 +93,12 @@ class VectorField(Field):
     # TODO: real vector shit
     def __init__(self, propSpeed, minIntensity):
         super(VectorField, self).__init__(propSpeed)
-        self.minI = minIntensity
+        self.minI = float(minIntensity)
 
 class SemanticField(Field):
     def __init__(self, propSpeed, minIntensity):
         super(SemanticField, self).__init__(propSpeed)
-        self.minI = minIntensity
+        self.minI = float(minIntensity)
 
     def spawnSphereFromObject(self, o):
         val = o.getRadiatedValue()

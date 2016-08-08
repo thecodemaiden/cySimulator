@@ -1,11 +1,18 @@
 <sim log="sim01.log">
+  <field name="RF" class="VectorField">
+    <param propSpeed="1"/>
+    <param minIntensity="1e-9"/>
+  </field>
+  <field name="RF_Semantic" class="SemanticField">
+    <param propSpeed="3e8"/>
+    <param minIntensity="1e-9"/>
+  </field>
   <device namePrefix="Quad">
     <count>5</count>
     <body>bodies/quadcopter.xml</body>
     <program>programs/hover.py</program>
     <sensor name ="acc" class="Accelerometer"/>
-    <sensor name ="radio" class="Semantic Radio">
-    </sensor>
+    <sensor name ="radio" class="Semantic Radio"/>
   </device>
   <layout file="layout/example_layout.xml">
     <startRegion>3.0,5.0,10.0</startRegion>

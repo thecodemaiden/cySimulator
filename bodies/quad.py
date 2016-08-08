@@ -169,10 +169,13 @@ class Quadcopter(PhysicalObject):
         for dv in self.sensors.values():
             dv.update(dt)
 
+        #### MOVE TO PROGRAM
         r = self.sensors['radio']
         # all PID and radio stuff will move to programs
         if self.time % 2.5 < dt:
             r.writePacket(RADIO_ADDR, RADIO_CHAN, "TEST")
+        ####
+
 
         pid_error = self.pid.update(self, dt)
         thrust_adj = self.pidOutputToMotors(pid_error, self.totalThrustNeeded())
@@ -191,9 +194,10 @@ class Quadcopter(PhysicalObject):
         airFriction = (array(v)*-self.airFrictionCoefficient*vMag)
         self.physicsBody.addForce(airFriction)
 
+        #### MOVE TO PROGRAM
         v = self.sensors['acc'].getValue()
-
         self.logger.info('{}.acc x: {}\ty: {}\tz: {}'.format(self.name, *v))
+        ####
        
 
     
