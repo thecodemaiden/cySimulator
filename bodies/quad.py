@@ -57,24 +57,19 @@ class Quadcopter(PhysicalObject):
 
         self.time = 0
 
-        self.name = "Quad1"
+        self.name = ""
         self.motorW = [0,0,0,0]
 
-        #self.makePhysicsBody()
         self.makeCrossBody()
 
         #attach an angular motor joint to the quadcopter
+        # TODO: abstract this out to all Devices
         self.aMotor = ode.AMotor(self.environment.world)
         self.aMotor.setNumAxes(3)
         self.aMotor.setMode(ode.AMotorEuler)
         self.aMotor.attach(self.physicsBody, None)
         self.aMotor.setAxis(0, 1, [1, 0, 0])
         self.aMotor.setAxis(2, 2, [0, 0, 1])
-
-        r = SemanticRadio(self, {'address':RADIO_ADDR, 'channel':RADIO_CHAN})
-        a = Accelerometer(self, {})
-        self.addSensor('radio', r)
-        self.addSensor('acc', a)
 
         self.moved = False
 
@@ -84,6 +79,15 @@ class Quadcopter(PhysicalObject):
 
     def addSensor(self, name, s):
         self.sensors[name] = s
+
+    def getSensor(self, name):
+        return self.sensors.get(name, None)
+
+    def getPidTarget(self):
+        return self.pid.target
+
+    def setPidTarget(self, targ):
+        self.pid.target = targ # format checking???
 
     def setPosition(self, pos):
         x,y,z = [self.environment.lengthScale*c for c in pos]
@@ -169,13 +173,6 @@ class Quadcopter(PhysicalObject):
         for dv in self.sensors.values():
             dv.update(dt)
 
-        #### MOVE TO PROGRAM
-        r = self.sensors['radio']
-        # all PID and radio stuff will move to programs
-        if self.time % 2.5 < dt:
-            r.writePacket(RADIO_ADDR, RADIO_CHAN, "TEST")
-        ####
-
 
         pid_error = self.pid.update(self, dt)
         thrust_adj = self.pidOutputToMotors(pid_error, self.totalThrustNeeded())
@@ -194,10 +191,7 @@ class Quadcopter(PhysicalObject):
         airFriction = (array(v)*-self.airFrictionCoefficient*vMag)
         self.physicsBody.addForce(airFriction)
 
-        #### MOVE TO PROGRAM
-        v = self.sensors['acc'].getValue()
-        self.logger.info('{}.acc x: {}\ty: {}\tz: {}'.format(self.name, *v))
-        ####
+
        
 
     

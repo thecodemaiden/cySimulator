@@ -12,7 +12,9 @@
     <body>bodies/quadcopter.xml</body>
     <program>programs/hover.py</program>
     <sensor name ="acc" class="Accelerometer"/>
-    <sensor name ="radio" class="Semantic Radio"/>
+    <sensor name ="radio" class="SemanticRadio">
+      <param channel="17"/>
+    </sensor>
   </device>
   <layout file="layout/example_layout.xml">
     <startRegion>3.0,5.0,10.0</startRegion>

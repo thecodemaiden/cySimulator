@@ -146,12 +146,16 @@ class ConfigReader(object):
             namePrefix = dv.attrib.get('namePrefix', 'Device')
             sensorSpecs = dv.findall('sensor')
             sensorList = {}
+            paramList = {}
             for s in sensorSpecs:
                 className = s.attrib['class']
                 try:
                     sensorClass = getattr(sensors, className)
                     name = s.attrib['name']
-                    # TODO: parse teh params
+                    params = s.findall('param')
+                    paramList[name] = {}
+                    for p in params:
+                        paramList[name].update(p.attrib) # TODO: params should be elements...
                     sensorList[name] = sensorClass
                 except AttributeError:
                     pass
@@ -162,7 +166,7 @@ class ConfigReader(object):
                 devName = '{}_{:3d}'.format(namePrefix, i)
                 deviceBody.name = devName
                 for sn, s in sensorList.items():
-                    deviceBody.addSensor(sn, s(deviceBody, {}))
+                    deviceBody.addSensor(sn, s(deviceBody, paramList.get(sn, {})))
                 e.addObject(deviceBody)
                 pos = [randomHalf(p) for p in startSpace]
                 deviceBody.setPosition(pos)
