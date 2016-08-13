@@ -1,5 +1,5 @@
 from ode import GeomBox
-from my_object import PhysicalObject
+from object_types import PhysicalObject
 
 class Wall(PhysicalObject):
     """A wall in the environment, which may contain rectangular holes"""
@@ -21,24 +21,18 @@ class Wall(PhysicalObject):
         self.geom.setPosition(self.centerPos)
 
     def onVisualizationStart(self):
-        g = self.environment.manager.visualizer.getGraphics(self.geom)
+        g = self.environment.visualizer.getGraphics(self.geom)
         g.color = self.color
         g.opacity = 0.1
-        #p = self.environment.getGeomVizProperty(self.geom)
-        #p.SetColor(self.color)
-        #p.SetOpacity(0.1)
-        #p.SetRepresentationToWireframe()
-        #p.EdgeVisibilityOn()
     
     @classmethod
     def cutHoleInWall(cls, wall, hole_size, hole_center):
         ''' Returns up to four walls, which are pieces around the hole '''
-        # TODO: make sure center lies in the wall (or some part of hole)
+        # TODO: make sure center lies in the wall (or at least some part of hole)
         if 0 in hole_size:
             return [wall]
 
         env = wall.environment
-
 
         scaledWallSize = [d/env.lengthScale for d in wall.dim]
         scaledWallCenter = [d/env.lengthScale for d in wall.centerPos]
@@ -50,36 +44,33 @@ class Wall(PhysicalObject):
             thicknessAxis = 2
 
         # first cut along y axis at one x-side of the hole
-        minFirstAxis1 =  scaledWallCenter[firstCutAxis] - scaledWallSize[firstCutAxis]/2 #wcx - wsx/2
-        maxFirstAxis1 = hole_center[firstCutAxis] - hole_size[firstCutAxis] #hcx - hsx/2
-        firstAxisWidth1 = maxFirstAxis1 - minFirstAxis1 # maxX1-minX1
+        minFirstAxis1 =  scaledWallCenter[firstCutAxis] - scaledWallSize[firstCutAxis]/2 
+        maxFirstAxis1 = hole_center[firstCutAxis] - hole_size[firstCutAxis] 
+        firstAxisWidth1 = maxFirstAxis1 - minFirstAxis1 
         if (firstAxisWidth1 > 0) :
             #otherwise the piece has area <=0 and we can ignore it
-            #  Wall((xw1, wsy, wsz), ((maxX1+minX1)/2, wcy, wcz), env)
             w = Wall((firstAxisWidth1, scaledWallSize[1], scaledWallSize[2]), 
                         ((maxFirstAxis1+minFirstAxis1)/2, scaledWallCenter[1], scaledWallCenter[2]), env)
             pieces.append(w)
         # next cut, also along y axis, on other x-side of hole
-        maxFirstAxis2 = scaledWallCenter[firstCutAxis] + scaledWallSize[firstCutAxis]/2#wcx + wsx/2
-        minFirstAxis2 = hole_center[firstCutAxis] + hole_size[firstCutAxis]/2#hcx + hsx/2
-        firstAxisWidth2 = maxFirstAxis2 - minFirstAxis2 #maxX2 - minX2
+        maxFirstAxis2 = scaledWallCenter[firstCutAxis] + scaledWallSize[firstCutAxis]/2
+        minFirstAxis2 = hole_center[firstCutAxis] + hole_size[firstCutAxis]/2
+        firstAxisWidth2 = maxFirstAxis2 - minFirstAxis2
         if (firstAxisWidth2 > 0):
-            # Wall((xw2, wsy, wsz), ((maxX2+minX2)/2, wcy, wcz), env)
             w = Wall((firstAxisWidth2, scaledWallSize[1], scaledWallSize[2]), 
                         ((maxFirstAxis2+minFirstAxis2)/2, scaledWallCenter[1], scaledWallCenter[2]), env)
             pieces.append(w)
 
         #now two remaining pieces, on either y-side of the hole
-        holeBegin = max(minFirstAxis1, maxFirstAxis1) #max(minX1, maxX1) in case hole is specified bigger than wall....
-        holeEnd = min(minFirstAxis2, maxFirstAxis2) # min(minX2, maxX2)
-        midPieceWidth = holeEnd - holeBegin #holeX2 - holeX1
+        holeBegin = max(minFirstAxis1, maxFirstAxis1) 
+        holeEnd = min(minFirstAxis2, maxFirstAxis2) 
+        midPieceWidth = holeEnd - holeBegin 
         if (midPieceWidth > 0):
             # can't see how it could be <= 0, but be safe I guess
             maxSecondAxis1 = scaledWallCenter[secondCutAxis] + scaledWallSize[secondCutAxis]/2
             minSecondAxis1 = hole_center[secondCutAxis] + hole_size[secondCutAxis]/2
             secondAxisWidth1 = maxSecondAxis1 - minSecondAxis1
             if secondAxisWidth1 > 0:
-                # w = Wall((xw3, yw1, wsz), ((holeX2+holeX1)/2, (maxY1+minY1)/2, wcz), env)
                 w = Wall((midPieceWidth, secondAxisWidth1, scaledWallSize[2]), 
                             ((holeBegin+holeEnd)/2, (maxSecondAxis1+minSecondAxis1)/2, scaledWallCenter[2]), env)
                 pieces.append(w)
@@ -90,8 +81,6 @@ class Wall(PhysicalObject):
                 w = Wall((midPieceWidth, secondAxisWidth2, scaledWallSize[2]), 
                             ((holeBegin+holeEnd)/2, (maxSecondAxis2+minSecondAxis2)/2, scaledWallCenter[2]), env)
                 pieces.append(w)
-
-
 
         return pieces
 

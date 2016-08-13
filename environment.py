@@ -62,14 +62,14 @@ class FieldDrawingManager():
             g.opacity = 0.3
             g.radius = s.radius
 
-class PhysicalEnvironment():
-    def __init__(self, manager):
+class PhysicalEnvironment(object):
+    def __init__(self):
+        super(PhysicalEnvironment, self).__init__()
         self.world = ode.World()
         self.space = ode.HashSpace()
         self.lengthScale = 1.0#10.0
         self.massScale = 1.0# 10.0 # now a unit is 10g, not 1kg...
         self.forceScale = self.massScale*self.lengthScale
-        self.manager = manager
         self.fieldList = {}
         self.drawField = False
 
@@ -80,11 +80,7 @@ class PhysicalEnvironment():
 
         self.contactGroup = ode.JointGroup()
 
-        self.objectList = []
-
-    def start(self):
-        for o in self.objectList:
-            o.onVisualizationStart()
+        self.objectList = []        
 
     def addField(self, fieldName, f):
         self.fieldList[fieldName] = {'field':f, 'display':{}}
@@ -100,7 +96,7 @@ class PhysicalEnvironment():
         # assumes body is already in our world, and collision geoms are in our space
         self.objectList.append(obj)
 
-    def update(self, dt):
+    def updatePhysics(self, dt):
         for o in self.objectList:
             o.update(dt)
         # then update the field
@@ -128,22 +124,20 @@ class PhysicalEnvironment():
             j = ode.ContactJoint(self.world, self.contactGroup, c)
             j.attach(geom1.getBody(), geom2.getBody())
 
-class ComputeEnvironment():
-    def __init__(self, manager):
+class ComputeEnvironment(object):
+    def __init__(self):
+        super(ComputeEnvironment, self).__init__()
         self.taskList = []
-        self.manager = manager
 
-    def start(self):
-        pass
+    def updateComputation(self, dt):
+       pass
 
-    def update(self, dt):
-        pass
-
-class SimulationManager():
+class SimulationManager(PhysicalEnvironment, ComputeEnvironment):
     """ Contains the physical + computational simulation loops, and any visualization"""
     def __init__(self, dt):
-        self.physicalEnvironment = PhysicalEnvironment(self)
-        self.computeEnvironment = ComputeEnvironment(self)
+        super(SimulationManager, self).__init__()
+        self.physicalEnvironment = self
+        self.computeEnvironment = self
         self.draw = True
         self.visualizer = None
         self.dt = dt;
@@ -154,15 +148,20 @@ class SimulationManager():
         self.visualizer = vClass(self.physicalEnvironment, *args)
 
     def start(self):
-        self.visualizer.create()
-        self.physicalEnvironment.start()
+        if self.visualizer is not None:
+            self.visualizer.create()
+            for o in self.objectList:
+                o.onVisualizationStart()
+
+    def update(self):
+        self.updateComputation(self.dt)
+        self.updatePhysics(self.dt)
 
     def runloop(self):
         from visual import rate
         try:
             while True:
-                self.physicalEnvironment.update(self.dt)
-                self.computeEnvironment.update(self.dt)
+                self.update()
                 if self.visualizer is not None:
                     self.visualizer.update(self.dt)
                     rate(1.0/self.dt)
