@@ -30,9 +30,9 @@ class Quadcopter(PhysicalObject):
         afc = getFloatParam('airFrictionCoefficient')
         maxW = getFloatParam('maxPropW')
 
-        ms = self.physicalEnvironment.massScale
-        ls = self.physicalEnvironment.lengthScale
-        fs = self.physicalEnvironment.forceScale
+        ms = self.environment.massScale
+        ls = self.environment.lengthScale
+        fs = self.environment.forceScale
 
         self.propellerThrustCoefficient = ptc*fs
         self.motorDragCoefficient = mdc*fs
@@ -64,7 +64,7 @@ class Quadcopter(PhysicalObject):
 
         #attach an angular motor joint to the quadcopter
         # TODO: abstract this out to all Devices
-        self.aMotor = ode.AMotor(self.physicalEnvironment.world)
+        self.aMotor = ode.AMotor(self.environment.world)
         self.aMotor.setNumAxes(3)
         self.aMotor.setMode(ode.AMotorEuler)
         self.aMotor.attach(self.physicsBody, None)
@@ -73,7 +73,7 @@ class Quadcopter(PhysicalObject):
 
         self.moved = False
 
-        #self.physicalEnvironment.addObject(self)
+        #self.environment.addObject(self)
         self.pid = PidController(2, 0, 0)
         self.pid.target = [0.1,0.0,0.0]
 
@@ -90,12 +90,12 @@ class Quadcopter(PhysicalObject):
         self.pid.target = targ # format checking???
 
     def setPosition(self, pos):
-        x,y,z = [self.physicalEnvironment.lengthScale*c for c in pos]
+        x,y,z = [self.environment.lengthScale*c for c in pos]
         self.physicsBody.setPosition((x,y,z))
 
     def makeCrossBody(self):
-        physicsWorld = self.physicalEnvironment.world
-        space = self.physicalEnvironment.space
+        physicsWorld = self.environment.world
+        space = self.environment.space
 
 
         mainBody = ode.Body(physicsWorld)
@@ -161,14 +161,14 @@ class Quadcopter(PhysicalObject):
         p   = arctan2(R[3], R[0]);    #psi
 
         theta = array([r,p,y])
-        total = self.totalMass*-self.physicalEnvironment.world.getGravity()[1]*self.physicalEnvironment.forceScale
+        total = self.totalMass*-self.environment.world.getGravity()[1]*self.environment.forceScale
         total = total/self.propellerThrustCoefficient
         total = total/(cos(r)*cos(p))
 
         return total
 
 
-    def updatePhysics(self,dt):
+    def update(self,dt):
 
         for dv in self.sensors.values():
             dv.update(dt)
@@ -216,7 +216,7 @@ class PidController(object):
         theta = array([r,p,y])
         #get thetadot later...
         #thetadot = array(copter.getAngularVelocity())
-        fs = copter.physicalEnvironment.forceScale
+        fs = copter.environment.forceScale
 
         nowError = self.target - theta
         dError = (nowError - self.lastError)/dt

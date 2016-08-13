@@ -1,11 +1,11 @@
 from ode import GeomBox
-from object_types import PhysicalObject
+from my_object import PhysicalObject
 
 class Wall(PhysicalObject):
     """A wall in the environment, which may contain rectangular holes"""
     def __init__(self, size, center_pos,  environment):
         super(Wall, self).__init__(environment)
-        ls = self.physicalEnvironment.lengthScale
+        ls = self.environment.lengthScale
         self.dim = tuple(s*ls for s in size)
         self.centerPos = tuple(c*ls for c in center_pos)
         self.color = (0.5, 0.5, 0)
@@ -16,15 +16,19 @@ class Wall(PhysicalObject):
 
     def makePhysicsBody(self):
         """ There is no actual physics body, just an immovable collision object """
-        space = self.physicalEnvironment.space
+        space = self.environment.space
         self.geom = GeomBox(space, self.dim)
         self.geom.setPosition(self.centerPos)
 
     def onVisualizationStart(self):
-        g = self.physicalEnvironment.manager.visualizer.getGraphics(self.geom)
+        g = self.environment.manager.visualizer.getGraphics(self.geom)
         g.color = self.color
         g.opacity = 0.1
-
+        #p = self.environment.getGeomVizProperty(self.geom)
+        #p.SetColor(self.color)
+        #p.SetOpacity(0.1)
+        #p.SetRepresentationToWireframe()
+        #p.EdgeVisibilityOn()
     
     @classmethod
     def cutHoleInWall(cls, wall, hole_size, hole_center):
@@ -33,7 +37,7 @@ class Wall(PhysicalObject):
         if 0 in hole_size:
             return [wall]
 
-        env = wall.physicalEnvironment
+        env = wall.environment
 
 
         scaledWallSize = [d/env.lengthScale for d in wall.dim]

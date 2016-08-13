@@ -26,7 +26,7 @@ class SemanticRadio(FieldObject):
         self.address = add
 
 
-        self.device.physicalEnvironment.addFieldObject('RF_Semantic', self)
+        self.device.environment.addFieldObject('RF_Semantic', self)
 
     def update(self, dt):
         # TODO: tx power up time? rx delays?

@@ -102,7 +102,7 @@ class PhysicalEnvironment():
 
     def update(self, dt):
         for o in self.objectList:
-            o.updatePhysics(dt)
+            o.update(dt)
         # then update the field
         for f in self.fieldList.values():
             field = f['field']

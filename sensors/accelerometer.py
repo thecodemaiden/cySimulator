@@ -10,8 +10,8 @@ class Accelerometer(object):
 
     def update(self, dt):
         body = self.entity.physicsBody
-        world = self.entity.physicalEnvironment.world
-        fs = self.entity.physicalEnvironment.forceScale
+        world = self.entity.environment.world
+        fs = self.entity.environment.forceScale
 
         vel = body.getLinearVel() # world frame 
 
