@@ -15,7 +15,6 @@ if __name__ == '__main__':
     logger.setLevel(logging.ERROR)
 
     sim = ConfigReader.readSimulationFile('sim_setup.xml')
-    e = sim.physicalEnvironment
     sim.setVisualizer(Vpy_Visualization)
     v = sim.visualizer
 
@@ -24,7 +23,3 @@ if __name__ == '__main__':
     scene.mouse.getclick()
     scene.autoscale = False
     sim.runloop()
- 
-
-
-

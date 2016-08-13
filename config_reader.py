@@ -15,7 +15,7 @@ import field_types
 class ConfigReader(object):
     """Reads the various option files"""
     def __init__(self, environment):
-        self.environment = environment
+        self.physicalEnvironment = environment
 
     @classmethod
     def _mixedToFloats(cls, l):
@@ -51,7 +51,7 @@ class ConfigReader(object):
                     s = w.find('size')
                     size = self._extractListStr(s.text)
                     size = [float(p) for p in size]
-                    wallList[wallName] = Wall(size, pos, self.environment)
+                    wallList[wallName] = Wall(size, pos, self.physicalEnvironment)
 
                 doors = child.findall('door')
                 for d in doors:
@@ -86,7 +86,7 @@ class ConfigReader(object):
         except AttributeError:
             return None # no such body
         params = {}
-        params['environment'] = self.environment
+        params['environment'] = self.physicalEnvironment
         xmlParams = root.findall('param')
         for p in xmlParams:
             params[p.attrib['name']] = p.attrib['value']

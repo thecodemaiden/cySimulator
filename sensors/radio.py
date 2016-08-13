@@ -7,7 +7,7 @@ class Radio(FieldObject):
         self.rx_sensitivity = rx_sens # in W
         self.tx_power = tx_pow
 
-        self.device.environment.addFieldObject('RF', self)
+        self.device.physicalEnvironment.addFieldObject('RF', self)
 
     def getRadiatedValue(self):
         return self.tx_power
