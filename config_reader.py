@@ -2,7 +2,7 @@ from ConfigParser import SafeConfigParser
 from wall import Wall
 from collections import defaultdict
 import xml.etree.ElementTree as etree
-
+import imp
 from environment import PhysicalEnvironment, ComputeEnvironment, SimulationManager
 import logging
 from random import uniform
@@ -10,6 +10,7 @@ from random import uniform
 # if there is a better way to access all bodies/sensors/etc, please do tell...
 import bodies
 import sensors
+import programs
 import field_types
 
 class ConfigReader(object):
@@ -76,6 +77,13 @@ class ConfigReader(object):
 
         return holeWalls
 
+    def loadDeviceTask(self, className):
+        try:
+            taskClass = getattr(programs, className)
+        except AttributeError:
+            return None
+        return taskClass
+
     def readBodyFile(self, filename):
         bodyTree = etree.parse(filename)
         root = bodyTree.getroot()
@@ -107,8 +115,7 @@ class ConfigReader(object):
                logger.addHandler(hndlr)
 
         sim = SimulationManager(1.0/30)
-        e = sim.physicalEnvironment
-        cr = ConfigReader(e) # TODO: these should all be class methods...?
+        cr = ConfigReader(sim) # TODO: these should all be class methods...?
         
         # create the fields
         fieldDescs = root.findall('field')
@@ -122,7 +129,7 @@ class ConfigReader(object):
                 for p in params:
                     attrInfo.update(p.attrib)
                 f = fieldClass(**attrInfo)
-                e.addField(name, f)
+                sim.addField(name, f)
             except AttributeError:
                 pass # TODO: log an error?
 
@@ -134,7 +141,7 @@ class ConfigReader(object):
 
         walls = cr.readLayoutFile(layoutFile)
         for w in walls:
-            e.addObject(w)
+            sim.addObject(w)
 
         # now add the devices
         slack = 0.1
@@ -142,9 +149,10 @@ class ConfigReader(object):
         deviceTypes = root.findall('device')
         for dv in deviceTypes:
             bodyFile = dv.findtext('body')
-            programFile = dv.findtext('program')
             namePrefix = dv.attrib.get('namePrefix', 'Device')
             sensorSpecs = dv.findall('sensor')
+            taskName = dv.findtext('program')
+            taskClass = cr.loadDeviceTask(taskName)
             sensorList = {}
             paramList = {}
             for s in sensorSpecs:
@@ -167,9 +175,10 @@ class ConfigReader(object):
                 deviceBody.name = devName
                 for sn, s in sensorList.items():
                     deviceBody.addSensor(sn, s(deviceBody, paramList.get(sn, {})))
-                e.addObject(deviceBody)
+                sim.addObject(deviceBody)
                 pos = [randomHalf(p) for p in startSpace]
                 deviceBody.setPosition(pos)
+                deviceBody.deviceTask = taskClass(deviceBody)
 
         return sim
 

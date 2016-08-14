@@ -4,6 +4,7 @@ class PhysicalObject(object):
     """Common methods for objects that are part of the physical simulation"""
     def __init__(self, environment):
         self.environment = environment
+        self.logger = None
 
     def updatePhysics(self, dt):
         pass
@@ -16,6 +17,7 @@ class ComputationalObject(object):
     def __init__(self, environment):
         self.environment = environment
         self.deviceTask = None
+        self.logger = None
 
     def updateComputation(self, dt):
         # TODO: use the dt
@@ -28,6 +30,7 @@ class Device(ComputationalObject, PhysicalObject):
         super(Device, self).__init__(environment)
         self.sensors = {}
         self.name = "Device"
+        self.time = 0
         self.applyParameters(params)
         self.makePhysicsBody()
         self.attachOrientationJoint()

@@ -61,7 +61,6 @@ class Quadcopter(Device):
 
         #self.environment.addObject(self)
         self.pid = PidController(2, 0, 0)
-        self.pid.target = [0.1,0.0,0.0]
 
     def getPidTarget(self):
         return self.pid.target

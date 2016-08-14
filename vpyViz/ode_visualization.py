@@ -3,14 +3,21 @@ import ode
 import visual as v
 from operator import eq
 import logging
+import time
 
 class Vpy_Visualization():
     def __init__(self, physicalEnvironment):
         self.logger = logging.getLogger(name='Quadsim.Visualizer')
         self.physEnv = physicalEnvironment
         self.obj = set()
-        self.simTime = 0.0
+        self.simFrames = 0
+        self.objUpdates = 0
 
+  
+    def updateLabel(self):
+        now = time.time()
+
+        
 
     def create(self):
         space = self.physEnv.space
@@ -21,7 +28,8 @@ class Vpy_Visualization():
     def update(self, dt):
         for obj in self.obj:
             obj.update()
-        self.simTime += dt
+            #self.objUpdates +=1
+        self.simFrames +=1 
 
     def getGraphics(self, geom):
         for o in self.obj:

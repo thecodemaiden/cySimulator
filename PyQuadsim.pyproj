@@ -40,7 +40,6 @@
     <Compile Include="programs\quad_hover.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="program_parser.py" />
     <Compile Include="config_reader.py">
       <SubType>Code</SubType>
     </Compile>
@@ -68,7 +67,7 @@
     <Compile Include="object_types.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="programs\__init.__.py">
+    <Compile Include="programs\__init__.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="sensors\accelerometer.py" />

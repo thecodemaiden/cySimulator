@@ -7,7 +7,7 @@ class DeviceTask(object):
         self.__runner = self.__runnerGen()
     
     def __runnerGen(self):
-        self.setup()
+        yield self.setup()
         while True:
             yield self.loop()
     

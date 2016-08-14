@@ -148,16 +148,15 @@ class SimulationManager(PhysicalEnvironment, ComputeEnvironment):
     """ Contains the physical + computational simulation loops, and any visualization"""
     def __init__(self, dt):
         super(SimulationManager, self).__init__()
-        self.physicalEnvironment = self
-        self.computeEnvironment = self
         self.draw = True
         self.visualizer = None
         self.dt = dt;
+        self.time = 0
 
     def setVisualizer(self, vClass, *args):
         if self.visualizer is not None:
             self.visualizer.cleanup()
-        self.visualizer = vClass(self.physicalEnvironment, *args)
+        self.visualizer = vClass(self, *args)
 
     def start(self):
         if self.visualizer is not None:
@@ -168,15 +167,18 @@ class SimulationManager(PhysicalEnvironment, ComputeEnvironment):
     def update(self):
         self.updateComputation(self.dt)
         self.updatePhysics(self.dt)
+        self.time += self.dt
 
     def runloop(self):
         from visual import rate
+        if self.visualizer is not None:
+            self.visualizer.startTime = time()
         try:
             while True:
                 self.update()
                 if self.visualizer is not None:
                     self.visualizer.update(self.dt)
-                    rate(1.0/self.dt)
+                    rate(100)
         except KeyboardInterrupt:
             print("Interrupted")
 

@@ -15,14 +15,16 @@ if __name__ == '__main__':
     logger.setLevel(logging.ERROR)
 
     sim = ConfigReader.readSimulationFile('sim_setup.xml')
-    e = sim.physicalEnvironment
     sim.setVisualizer(Vpy_Visualization)
     v = sim.visualizer
 
     sim.start()
 
-    scene.mouse.getclick()
     scene.autoscale = False
+    scene.autocenter=False
+    scene.range=[5,5,5]
+    scene.mouse.getclick()
+
     sim.runloop()
  
 
