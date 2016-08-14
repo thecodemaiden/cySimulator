@@ -3,20 +3,19 @@ from numpy import sqrt, array, arctan2, arcsin, cos, sum, arccos
 from numpy.linalg import norm
 import logging
 from sensors import SemanticRadio, Accelerometer
-from object_types import PhysicalObject
+from object_types import Device
 from time import time 
 
 RADIO_ADDR=0x7E7E7E7EL
 RADIO_CHAN=17
 
-class Quadcopter(PhysicalObject):
+class Quadcopter(Device):
     def __init__(self, params):
-        environment = params['environment']
-        super(Quadcopter, self).__init__(environment)
+        super(Quadcopter, self).__init__(params)
         self.logger = logging.getLogger(name='Quadsim.Quadcopter')
         #self.logger.setLevel(logging.DEBUG)
-        self.sensors = {}
 
+    def applyParameters(self, params):
         getFloatParam = lambda x: float(params[x])
 
         armLength = getFloatParam('armLength')
@@ -55,21 +54,8 @@ class Quadcopter(PhysicalObject):
         self.motorMass = motorMass*ms
         self.bodyMass = bodyMass*ms
 
-        self.time = 0
-
-        self.name = ""
         self.motorW = [0,0,0,0]
 
-        self.makeCrossBody()
-
-        #attach an angular motor joint to the quadcopter
-        # TODO: abstract this out to all Devices
-        self.aMotor = ode.AMotor(self.environment.world)
-        self.aMotor.setNumAxes(3)
-        self.aMotor.setMode(ode.AMotorEuler)
-        self.aMotor.attach(self.physicsBody, None)
-        self.aMotor.setAxis(0, 1, [1, 0, 0])
-        self.aMotor.setAxis(2, 2, [0, 0, 1])
 
         self.moved = False
 
@@ -77,26 +63,15 @@ class Quadcopter(PhysicalObject):
         self.pid = PidController(2, 0, 0)
         self.pid.target = [0.1,0.0,0.0]
 
-    def addSensor(self, name, s):
-        self.sensors[name] = s
-
-    def getSensor(self, name):
-        return self.sensors.get(name, None)
-
     def getPidTarget(self):
         return self.pid.target
 
     def setPidTarget(self, targ):
         self.pid.target = targ # format checking???
 
-    def setPosition(self, pos):
-        x,y,z = [self.environment.lengthScale*c for c in pos]
-        self.physicsBody.setPosition((x,y,z))
-
-    def makeCrossBody(self):
+    def makePhysicsBody(self):
         physicsWorld = self.environment.world
         space = self.environment.space
-
 
         mainBody = ode.Body(physicsWorld)
         bodyMass = ode.Mass()
@@ -168,7 +143,7 @@ class Quadcopter(PhysicalObject):
         return total
 
 
-    def update(self,dt):
+    def updatePhysics(self,dt):
 
         for dv in self.sensors.values():
             dv.update(dt)
@@ -183,7 +158,7 @@ class Quadcopter(PhysicalObject):
         torque = self.calculateTorques()
 
         self.physicsBody.addRelForce(thrust)
-        self.aMotor.addTorques(*torque)
+        self.orientationMotor.addTorques(*torque)
         
         # finally, the air drag force - turns out we need it to hover!
         v = self.physicsBody.getLinearVel()
@@ -294,9 +269,9 @@ class PidRateAtt(object):
         self.pitchRatePid.target = pitchRate
         self.yawRatePid.target = yawRate
 
-        wr = copter.aMotor.getAngleRate(0)
-        wy = copter.aMotor.getAngleRate(1)
-        wp = copter.aMotor.getAngleRate(2)
+        wr = copter.orientationMotor.getAngleRate(0)
+        wy = copter.orientationMotor.getAngleRate(1)
+        wp = copter.orientationMotor.getAngleRate(2)
          
 
         self.rollOutput = self.rollRatePid.update(wr, dt)

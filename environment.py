@@ -67,8 +67,8 @@ class PhysicalEnvironment(object):
         super(PhysicalEnvironment, self).__init__()
         self.world = ode.World()
         self.space = ode.HashSpace()
-        self.lengthScale = 1.0#10.0
-        self.massScale = 1.0# 10.0 # now a unit is 10g, not 1kg...
+        self.lengthScale = 1.0 
+        self.massScale = 1.0 
         self.forceScale = self.massScale*self.lengthScale
         self.fieldList = {}
         self.drawField = False
@@ -98,9 +98,12 @@ class PhysicalEnvironment(object):
 
     def updatePhysics(self, dt):
         for o in self.objectList:
-            o.update(dt)
+            try:
+                o.updatePhysics(dt)
+            except AttributeError:
+                pass # maybe some things are pure computation?
         # then update the field
-        for f in self.fieldList.values():
+        for f in self.fieldList.values(): # TODO: make the fields into encapsualted 'physics objects'
             field = f['field']
             field.update(dt)
             if self.drawField:
@@ -127,10 +130,19 @@ class PhysicalEnvironment(object):
 class ComputeEnvironment(object):
     def __init__(self):
         super(ComputeEnvironment, self).__init__()
-        self.taskList = []
+        self.objectList = []
 
     def updateComputation(self, dt):
-       pass
+        for o in self.objectList:
+            try:
+                o.updateComputation(dt)
+            except AttributeError:
+                pass # not everything has computation
+
+    def addObject(self, obj):
+        # assumes body is already in our world, and collision geoms are in our space
+        self.objectList.append(obj)
+
 
 class SimulationManager(PhysicalEnvironment, ComputeEnvironment):
     """ Contains the physical + computational simulation loops, and any visualization"""
