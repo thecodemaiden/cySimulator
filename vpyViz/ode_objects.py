@@ -68,9 +68,9 @@ class Vpy_Object():
 
 class Vpy_Box(Vpy_Object):
     """ VTK visualization of class ode.GeomBox  """
-    def __init__(self, geom, ident=None):
+    def __init__(self, geom, ident=None, onCanvas=v.scene):
 
-        self.src = v.box()
+        self.src = v.box(display=onCanvas)
         (xsize, ysize, zsize) = geom.getLengths()
 
         self.src.length = xsize
@@ -83,9 +83,9 @@ class Vpy_Box(Vpy_Object):
 
 class Vpy_Ray(Vpy_Object):
     """ VTK visualization of class ode.GeomRay  """
-    def __init__(self, geom, ident=None):
+    def __init__(self, geom, ident=None, onCanvas=v.scene):
 
-        self.src = v.arrow()
+        self.src = v.arrow(display=onCanvas)
 
         length = self.geom.getLength()
 
@@ -120,8 +120,8 @@ class Vpy_Ray(Vpy_Object):
 
 class Vpy_Sphere(Vpy_Object):
     """ VTK visualization of class ode.GeomSphere  """
-    def __init__(self, geom, ident=None):
-        self.src = v.sphere()
+    def __init__(self, geom, ident=None, onCanvas=v.scene):
+        self.src = v.sphere(display=onCanvas)
         Vpy_Object.__init__(self, geom, ident)
 
         radius = self.geom.getRadius()
@@ -131,8 +131,8 @@ class Vpy_Sphere(Vpy_Object):
 
 class Vpy_Cylinder(Vpy_Object):
     """ VTK visualization of class ode.GeomCylinder  """
-    def __init__(self, geom, ident=None):
-        self.src = v.cylinder()
+    def __init__(self, geom, ident=None, onCanvas=v.scene):
+        self.src = v.cylinder(display=onCanvas)
 
         (radius, height) = self.geom.getParams()
 
@@ -143,9 +143,9 @@ class Vpy_Cylinder(Vpy_Object):
 
 class Vpy_Capsule(Vpy_Object):
     """ VTK visualization of class ode.GeomCapsule  """
-    def __init__(self, geom, ident=None):
+    def __init__(self, geom, ident=None, onCanvas=v.scene):
 
-        self.src = v.frame()
+        self.src = v.frame(display=onCanvas)
 
         Vpy_Object.__init__(self, geom, ident)
 
@@ -158,7 +158,7 @@ class Vpy_Capsule(Vpy_Object):
 class Vpy_Plane(Vpy_Object):
     """ VTK visualization of class ode.GeomPlane  """
     def __init__(self, geom, ident=None):
-        self.src = vtkDiskSource()
+        self.src = None
         Vpy_Object.__init__(self, geom, ident)
         self.size = 2000
 
@@ -213,7 +213,7 @@ class Vpy_TriMesh(Vpy_Object):
     """ VTK visualization of class ode.GeomTriMesh  """
     def __init__(self, geom, ident=None):
 
-        self.src = vtkPolyData()
+        self.src = None
         Vpy_Object.__init__(self, geom, ident, "")
 
         points = vtkPoints()

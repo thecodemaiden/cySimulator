@@ -66,7 +66,7 @@ class Quadcopter(Device):
         return self.pid.target
 
     def setPidTarget(self, targ):
-        self.pid.target = targ # format checking???
+        self.pid.target = array(targ) # format checking???
 
     def makePhysicsBody(self):
         physicsWorld = self.environment.world
@@ -164,9 +164,6 @@ class Quadcopter(Device):
         vMag = norm(v)
         airFriction = (array(v)*-self.airFrictionCoefficient*vMag)
         self.physicsBody.addForce(airFriction)
-
-
-       
 
     
 class PidController(object):
