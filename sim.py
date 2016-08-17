@@ -1,12 +1,7 @@
-from wall import Wall
 import logging
-from random import uniform
 from config_reader import ConfigReader
-from field_types import VectorField, SemanticField   
 from vpyViz.ode_visualization import Vpy_Visualization
 from environment import SimulationManager
-
-from space_field import *
 
 if __name__ == '__main__':
     logger = logging.getLogger("Quadsim")

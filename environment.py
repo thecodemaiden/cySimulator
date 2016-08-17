@@ -7,7 +7,6 @@ import numpy as np
 
 from time import time
 
-
 class FieldDrawingManager():
     import visual as v
     def __init__(self):
@@ -22,7 +21,6 @@ class FieldDrawingManager():
             actor.pos = sphere.center
             actor.radius = sphere.radius
             self.sphereDisplay[sphere] = actor
-
 
     def removeWavefront(self, sphere):
         s = self.sphereDisplay.pop(sphere, None)
@@ -55,11 +53,13 @@ class FieldDrawingManager():
 
         # update next tick...
         for s, g in self.sphereDisplay.items():
+            if s.intensity is None:
+                continue
             i = np.log(s.intensity)
             
             intensityColor = Heatmap.getHeatmapValue(i, self.minI, self.maxI)
-            g.color = intensityColor
-            g.opacity = 0.3
+            g.color =  (0.0,1.0,0.0)#intensityColor
+            g.opacity = 0.2
             g.radius = s.radius
 
 class PhysicalEnvironment(object):
@@ -77,7 +77,7 @@ class PhysicalEnvironment(object):
         self.world.setCFM(1e-5)
         self.world.setERP(0.8) # seems to make the collision behavior more stable
         self.world.setContactSurfaceLayer(0.001)
-
+        self.time = 0
         self.contactGroup = ode.JointGroup()
 
         self.objectList = []        
@@ -102,10 +102,15 @@ class PhysicalEnvironment(object):
                 o.updatePhysics(dt)
             except AttributeError:
                 pass # maybe some things are pure computation?
-        # then update the field
+        # then update the field... slowly
+        oldTime = self.time
+        div = 10
+
         for f in self.fieldList.values(): # TODO: make the fields into encapsualted 'physics objects'
-            field = f['field']
-            field.update(dt)
+            for i in range(div):
+                oldTime += dt/div
+                field = f['field']
+                field.update(oldTime)
             if self.drawField:
                 managers = f['display']
                 for obj, wfs in field.objects.items():
@@ -131,6 +136,7 @@ class ComputeEnvironment(object):
     def __init__(self):
         super(ComputeEnvironment, self).__init__()
         self.objectList = []
+        self.time = 0
 
     def updateComputation(self, dt):
         for o in self.objectList:
@@ -151,7 +157,6 @@ class SimulationManager(PhysicalEnvironment, ComputeEnvironment):
         self.draw = True
         self.visualizer = None
         self.dt = dt;
-        self.time = 0
 
     def setVisualizer(self, vClass, *args):
         if self.visualizer is not None:
@@ -163,6 +168,7 @@ class SimulationManager(PhysicalEnvironment, ComputeEnvironment):
             self.visualizer.create()
             for o in self.objectList:
                 o.onVisualizationStart()
+        self.time = 0
 
     def update(self):
         self.updateComputation(self.dt)

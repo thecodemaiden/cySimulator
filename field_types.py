@@ -14,20 +14,55 @@ class FieldObject(object):
         return False
 
 class FieldSphere(object):
-    def __init__(self, center, totalPower, data=None):
+    startR = 0.00001
+    def __init__(self, center, totalPower, startTime, data=None):
         # TODO: waves have wavelengths
         self.totalPower = totalPower
         self.center = center
-        self.radius = 0 # TODO: make this an epsilon?
-        self.lastRadius = 0
+        self.radius = self.startR # TODO: make this an epsilon?
         self.intensity = None# LOL wut
         self.data = data
+        self.t1 = startTime
+        self.t1_2 = self.t1*self.t1
+        self.lastCheckTime = None
+        self.lastTTerm = None
+        self.center_2 = sum([k*k for k in self.center])
+        self.obj_distances = {}
+
+    def prepareToDiscard(self, t, ct_calc, speed):
+        if self.lastCheckTime != t:
+            self.lastCheckTime = t
+            self.lastTTerm = ct_calc + (- 2*self.t1*t + self.t1_2)*speed
+        # this is actually our current radius! see if we are too diminished
+        self.radius = self.lastTTerm
+        #if self.radius == 0:
+        #    self.radius = self.startR
+        if self.radius > 0:
+            self.intensity = self.totalPower/self.radius# this is amplitude! (self.radius*self.radius)
+
+    def calculate(self, obj, obj_pos, obj_pos_sq):
+        # TODO: we can do bounding boxen
+        x1, y1, z1 = self.center
+        x,y,z = obj_pos
+        # obj_pos_sq == x^2+y^2+z^2
+        # ct_calc = ct^2
+        order2 = 2*x*x1 + 2*y*y1 + 2*z*z1
+       
+        lhs = obj_pos_sq - order2 + self.center_2
+        oldDist = self.obj_distances.get(obj, -1)
+        newDist = lhs - self.lastTTerm
+        self.obj_distances[obj] = newDist
+        if newDist == 0 or (oldDist > 0 and newDist < 0):
+            return True
+        return False
+
 
 class Field(object):
-    def __init__(self, propSpeed):
+    def __init__(self, propSpeed, minI=1e-10):
         # TODO: replace with sphereList, mapping sphere to producing object
         self.objects = {}
         self.speed = float(propSpeed)
+        self.minI = minI
 
     def addObject(self, o):
         self.objects[o] = []
@@ -40,54 +75,52 @@ class Field(object):
             for s in sphereList:
                 yield s
 
-    def performIntersections(self):
+    def performIntersections(self, t):
         '''We need to go through all spheres and find intersections between objects and spheres with radius>0'''
         # assumes waaay more spheres than objects
         # TODO: octree or other representation to limit comparisons
+
+        # precalculate obj. info
+        objInfoTable = {}
+        for o in self.objects:
+            pos = o.getPosition()
+            pos2 = sum([k*k for k in pos])
+            objInfoTable[o] = (pos, pos2)
+
         allSpheresList = self._sphereGenerator()
         for s in allSpheresList:
-            if s.radius == 0: continue
+            if s.intensity is None:
+                continue
             for o in self.objects:
-                # TODO: maintain object positions????
-                dCenters = np.linalg.norm(np.array(s.center)-np.array(o.getPosition()))
-                # TODO: obstacles
-                if dCenters == s.radius:
+                info = objInfoTable[o]
+                didIntersect = s.calculate(o, info[0], info[1])
+                if didIntersect:
                     o.detectField(s)
-                elif dCenters > s.lastRadius and dCenters< s.radius:
-                    # TODO: we need to roll back to time of intersection
-                    copySphere = FieldSphere(s.center, s.totalPower, s.data)
-                    copySphere.intensity = s.totalPower/dCenters
-                    o.detectField(copySphere)
+                # TODO: is time rollback even necessary???
 
-    def updateSphereValue(self, s, dt):
-         # we need to expand it, and if power density is too low, remove it
-        if s.intensity is not None and s.intensity < self.minI:
-            return None
-        s.lastRadius = s.radius
-        s.radius += dt*self.speed
-        s.intensity = s.totalPower/(s.radius**2)
-        return s
-
-    def spawnSphereFromObject(self, o):
-        newSphere = FieldSphere(o.getPosition(), o.getRadiatedValue())
-        return newSphere
-
-    def update(self,dt):
+    def update(self, now):
         # TODO: modify in-place
-        gc.disable()
-        for o,sphereList in self.objects.items():
-            newSphereList = []
-            newSphere = self.spawnSphereFromObject(o)
-            if newSphere is not None:
-                newSphereList.append(newSphere)
-            for s in sphereList:
-               newS = self.updateSphereValue(s, dt)
-               if newS is not None:
-                   newSphereList.append(newS)
-            self.objects[o] = newSphereList
-        gc.enable()
-        self.performIntersections()
+        ctCalc = self.speed*now*now
 
+        allObjects = self.objects.iterkeys()
+        for o in allObjects:
+            toRemove = []
+            sphereList = self.objects[o]
+            newSphere = self.spawnSphereFromObject(o, now) # TODO: check frequency!
+            if newSphere is not None:
+                newSphere.obj_distances[o] = 0
+                sphereList.append(newSphere)
+            for s in sphereList:
+                s.prepareToDiscard(now, ctCalc, self.speed)
+                if s.intensity is not None and s.intensity < self.minI:
+                    toRemove.append(s)
+            newList = [s for s in sphereList if s not in toRemove]
+            self.objects[o] = newList
+        self.performIntersections(now)
+
+    def spawnSphereFromObject(self, o, t):
+        newSphere = FieldSphere(o.getPosition(), o.getRadiatedValue(), t)
+        return newSphere
 
 class VectorField(Field):
     # TODO: real vector shit
@@ -100,10 +133,10 @@ class SemanticField(Field):
         super(SemanticField, self).__init__(propSpeed)
         self.minI = float(minIntensity)
 
-    def spawnSphereFromObject(self, o):
+    def spawnSphereFromObject(self, o,t):
         val = o.getRadiatedValue()
         if val is not None:
-            newSphere = FieldSphere(o.getPosition(), val[0], val[1])
+            newSphere = FieldSphere(o.getPosition(), val[0], t, val[1])
             return newSphere
         return None
 

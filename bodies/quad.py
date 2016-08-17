@@ -6,14 +6,11 @@ from sensors import SemanticRadio, Accelerometer
 from object_types import Device
 from time import time 
 
-RADIO_ADDR=0x7E7E7E7EL
-RADIO_CHAN=17
 
 class Quadcopter(Device):
     def __init__(self, params):
         super(Quadcopter, self).__init__(params)
         self.logger = logging.getLogger(name='Quadsim.Quadcopter')
-        #self.logger.setLevel(logging.DEBUG)
 
     def applyParameters(self, params):
         getFloatParam = lambda x: float(params[x])
@@ -55,8 +52,6 @@ class Quadcopter(Device):
         self.bodyMass = bodyMass*ms
 
         self.motorW = [0,0,0,0]
-
-
         self.moved = False
 
         #self.environment.addObject(self)
@@ -90,7 +85,6 @@ class Quadcopter(Device):
         secondArmGeom = ode.GeomBox(space, (self.motorRadius, self.bodyHeight, offset))
         secondArmGeom.setCategoryBits(1)
         secondArmGeom.setCollideBits(1)
-
 
         mainBody.setMass(bodyMass)
         firstArmGeom.setBody(mainBody)
@@ -151,7 +145,6 @@ class Quadcopter(Device):
 
         for dv in self.sensors.values():
             dv.update(dt)
-
 
         pid_error = self.pid.update(self, dt)
         thrust_adj = self.pidOutputToMotors(pid_error, self.totalThrustNeeded())
