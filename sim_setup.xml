@@ -8,7 +8,7 @@
     <param minIntensity="1e-9"/>
   </field>
   <device namePrefix="Quad">
-    <count>5</count>
+    <count>15</count>
     <body>bodies/quadcopter.xml</body>
     <sensor name ="acc" class="Accelerometer"/>
     <sensor name ="radio" class="SemanticRadio">

@@ -19,11 +19,6 @@ if __name__ == '__main__':
     sim.setVisualizer(Vpy_Visualization)
     scene = sim.visualizer.canvas
 
-    #shittyField = OdeField(340, sim.space)
-    #shittyObject = OdeFieldTestObject()
-    #sim.addField('Shitty', shittyField)
-    #sim.addFieldObject('Shitty', shittyObject)
-
     sim.start()
 
     scene.autoscale = False

@@ -83,9 +83,6 @@
     <Compile Include="sensors\__init__.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="space_field.py">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="vpyViz\ode_objects.py">
       <SubType>Code</SubType>
     </Compile>
