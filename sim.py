@@ -4,7 +4,9 @@ from random import uniform
 from config_reader import ConfigReader
 from field_types import VectorField, SemanticField   
 from vpyViz.ode_visualization import Vpy_Visualization
-from environment import PhysicalEnvironment, SimulationManager
+from environment import SimulationManager
+
+from space_field import *
 
 if __name__ == '__main__':
     logger = logging.getLogger("Quadsim")
@@ -16,6 +18,11 @@ if __name__ == '__main__':
     sim = ConfigReader.readSimulationFile('sim_setup.xml')
     sim.setVisualizer(Vpy_Visualization)
     scene = sim.visualizer.canvas
+
+    #shittyField = OdeField(340, sim.space)
+    #shittyObject = OdeFieldTestObject()
+    #sim.addField('Shitty', shittyField)
+    #sim.addFieldObject('Shitty', shittyObject)
 
     sim.start()
 

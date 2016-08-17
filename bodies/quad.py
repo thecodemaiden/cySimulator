@@ -85,7 +85,12 @@ class Quadcopter(Device):
         bodyMass.add(armMass)
 
         firstArmGeom = ode.GeomBox(space, (offset, self.bodyHeight, self.motorRadius))
+        firstArmGeom.setCategoryBits(1)
+        firstArmGeom.setCollideBits(1)
         secondArmGeom = ode.GeomBox(space, (self.motorRadius, self.bodyHeight, offset))
+        secondArmGeom.setCategoryBits(1)
+        secondArmGeom.setCollideBits(1)
+
 
         mainBody.setMass(bodyMass)
         firstArmGeom.setBody(mainBody)

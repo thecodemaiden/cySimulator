@@ -19,6 +19,8 @@ class Wall(PhysicalObject):
         space = self.environment.space
         self.geom = GeomBox(space, self.dim)
         self.geom.setPosition(self.centerPos)
+        self.geom.setCategoryBits(2)
+        self.geom.setCollideBits(1)
 
     def onVisualizationStart(self):
         g = self.environment.visualizer.getGraphics(self.geom)
