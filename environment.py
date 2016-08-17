@@ -176,7 +176,6 @@ class SimulationManager(PhysicalEnvironment, ComputeEnvironment):
         self.time += self.dt
 
     def runloop(self):
-        from visual import rate
         if self.visualizer is not None:
             self.visualizer.startTime = time()
         try:
@@ -184,7 +183,6 @@ class SimulationManager(PhysicalEnvironment, ComputeEnvironment):
                 self.update()
                 if self.visualizer is not None:
                     self.visualizer.update(self.dt)
-                    rate(100)
         except KeyboardInterrupt:
             print("Interrupted")
 

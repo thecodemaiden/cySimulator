@@ -45,6 +45,7 @@ class Vpy_Visualization():
         self.simFrames +=1 
         self.simTime += dt
         self.updateLabel()
+        v.rate(200)
 
     def getGraphics(self, geom):
         for o in self.obj:

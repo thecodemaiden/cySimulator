@@ -4,7 +4,7 @@
     <param minIntensity="1e-9"/>
   </field>
   <field name="RF_Semantic" class="SemanticField">
-    <param propSpeed="10"/>
+    <param propSpeed="3e8"/>
     <param minIntensity="1e-9"/>
   </field>
   <device namePrefix="Quad">
