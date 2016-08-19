@@ -54,7 +54,6 @@ class Quadcopter(Device):
         self.motorW = [0,0,0,0]
         self.moved = False
 
-        #self.environment.addObject(self)
         self.pid = PidController(2, 0, 0)
 
     def getPidTarget(self):

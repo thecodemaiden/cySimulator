@@ -20,6 +20,7 @@ class Vpy_Visualization():
         self.lastFPSCheckTime = None
         self.lastFPS = 0.0
         self.simTime = 0.0
+        self.fpsValues = []
 
     def updateLabel(self):
         now = time.time()
@@ -30,6 +31,7 @@ class Vpy_Visualization():
         elif self.simFrames % 60 == 0:
             self.lastFPS = 60.0/(now - self.lastFPSCheckTime)
             self.lastFPSCheckTime = now
+            self.fpsValues.append(self.lastFPS)
         self.infoLabel.text = labelFormat.format(elapsed, self.simTime, self.lastFPS)
 
     def create(self):
@@ -45,7 +47,7 @@ class Vpy_Visualization():
         self.simFrames +=1 
         self.simTime += dt
         self.updateLabel()
-        v.rate(200)
+        v.rate(2000)
 
     def getGraphics(self, geom):
         for o in self.obj:

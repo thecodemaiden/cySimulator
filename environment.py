@@ -176,13 +176,32 @@ class SimulationManager(PhysicalEnvironment, ComputeEnvironment):
         self.time += self.dt
 
     def runloop(self):
+        timeout = 20.0
+        startTime = time()
         if self.visualizer is not None:
             self.visualizer.startTime = time()
+            #self.visualizer.canvas.mouse.getclick()
+        else:
+            import msvcrt
+            print 'Hit ESC to end'
+            # TODO:  put keyboard input on separate thread...
         try:
             while True:
                 self.update()
                 if self.visualizer is not None:
                     self.visualizer.update(self.dt)
+                else:
+                    if msvcrt.kbhit():
+                        chr = msvcrt.getche()
+                        if ord(chr) == 27:
+                            break
+                if time()-startTime >= timeout:
+                    break
+              
         except KeyboardInterrupt:
-            print("Interrupted")
+            pass
+        finally:
+            # TODO: put this in cleanup function
+            self.visualizer.canvas.window.delete_all()
+
 

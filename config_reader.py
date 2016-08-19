@@ -109,10 +109,11 @@ class ConfigReader(object):
 
         logFile = root.get('log')
         if logFile is not None:
-               logger = logging.getLogger("Quadsim")
-               hndlr = logging.FileHandler(logFile, mode='w')
-               hndlr.setFormatter(logging.Formatter(fmt='%(name)s[%(levelname)s]: %(message)s'))
-               logger.addHandler(hndlr)
+            logger = logging.getLogger("Quadsim")
+            # TODO - cleanup log handler at simulation end
+            hndlr = logging.FileHandler(logFile, mode='a')
+            hndlr.setFormatter(logging.Formatter(fmt='%(name)s[%(levelname)s]: %(message)s'))
+            logger.addHandler(hndlr)
 
         sim = SimulationManager(1.0/30)
         cr = ConfigReader(sim) # TODO: these should all be class methods...?

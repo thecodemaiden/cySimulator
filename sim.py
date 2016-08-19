@@ -2,26 +2,50 @@ import logging
 from config_reader import ConfigReader
 from vpyViz.ode_visualization import Vpy_Visualization
 from environment import SimulationManager
+from time import time, sleep
 
-if __name__ == '__main__':
-    logger = logging.getLogger("Quadsim")
-    hndlr = logging.FileHandler("sim.log", mode='w')
-    hndlr.setFormatter(logging.Formatter(fmt='%(name)s[%(levelname)s]: %(message)s'))
-    logger.addHandler(hndlr)
-    logger.setLevel(logging.ERROR)
+logger = logging.getLogger("Quadsim")
+logger.setLevel(logging.INFO)
 
-    sim = ConfigReader.readSimulationFile('sim_setup.xml')
-    sim.setVisualizer(Vpy_Visualization)
-    scene = sim.visualizer.canvas
+
+def runSimulationFile(filename, withViz):
+    sim = ConfigReader.readSimulationFile(filename)
+    if withViz:
+        sim.setVisualizer(Vpy_Visualization)
+        scene = sim.visualizer.canvas
+        scene.autoscale = False
+        scene.autocenter =False
 
     sim.start()
+    print('Simulation start')
 
-    scene.autoscale = False
-    scene.autocenter=False
-    scene.mouse.getclick()
-
+    start = time()
     sim.runloop()
- 
+    realTime = time()-start
+    simTime = sim.time
+
+    if withViz:
+        logger.info('FPS: {}'.format(sim.visualizer.fpsValues)) 
+
+    del sim
+    return (simTime, realTime)
+
+if __name__ == '__main__':
+
+    def benchmarkFile(filename):
+        for i in range(10):
+            doVis = True
+            (s, r) = runSimulationFile(filename, doVis)
+            logger.info('Simulation time: {:4.2f}\t Clock time: {:4.2f}'.format(s, r))
+            logger.handlers = []
+            sleep(1)
+    names = ['sim05_noradio.xml','sim10_noradio.xml','sim15_noradio.xml','sim20_noradio.xml','sim25_noradio.xml']
+    for n in names:
+        print("\t--- {} ---\t". format(n))
+        benchmarkFile('profile_setup/'+n)
+    import visual as v
+    v.rate(1)
+    v.exit()
 
 
 
