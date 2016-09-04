@@ -1,0 +1,24 @@
+<sim log="sim15_noradio.log">
+  <field name="RF" class="VectorField">
+    <param propSpeed="1"/>
+    <param minIntensity="1e-9"/>
+  </field>
+  <field name="RF_Semantic" class="SemanticField">
+    <param propSpeed="3e8"/>
+    <param minIntensity="1e-9"/>
+  </field>
+  <device namePrefix="Quad">
+    <count>15</count>
+    <body>bodies/quadcopter.xml</body>
+    <sensor name ="acc" class="Accelerometer"/>
+     <!--<sensor name ="radio" class="SemanticRadio"> 
+      <param channel="17"/>
+    </sensor> -->
+    <program>QuadHover</program>
+  </device>
+   <layout file="layout/example_layout.xml">
+    <startRegion>(-1.5, -2.5, -5.0),(1.5,2.5,5.0)</startRegion>
+    <startRegion>(-5.5, -2.5, -9.0),(1.5,2.5,-5.0)</startRegion>
+    <startRegion>(-1.5, -2.5, 5.0),(5.5,2.5,9.0)</startRegion>
+  </layout>
+</sim>

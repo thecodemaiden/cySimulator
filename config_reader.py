@@ -5,7 +5,7 @@ import xml.etree.ElementTree as etree
 import imp
 from environment import PhysicalEnvironment, ComputeEnvironment, SimulationManager
 import logging
-from random import uniform
+from random import uniform, choice
 
 # if there is a better way to access all bodies/sensors/etc, please do tell...
 import bodies
@@ -137,8 +137,16 @@ class ConfigReader(object):
         # now read the layout file
         layout = root.find('layout')
         layoutFile = layout.attrib['file']
-        startSpace = cls._extractListStr(layout.find('startRegion').text)
-        startSpace = [float(p) for p in startSpace]
+
+        startRegionsStr = layout.findall('startRegion')
+        startRegions = []
+        for r in startRegionsStr:
+            t = r.text
+            t=t.replace('(', '')
+            t=t.replace(')', '')
+            longStr = cls._extractListStr(t)
+            left, bottom, back, right, top, front = [float(p) for p in longStr]
+            startRegions.append(((left,bottom,back), (right, top, front)))
 
         walls = cr.readLayoutFile(layoutFile)
         for w in walls:
@@ -146,7 +154,6 @@ class ConfigReader(object):
 
         # now add the devices
         slack = 0.1
-        randomHalf = lambda c: uniform(-c/2.0 + slack, c/2.0 - slack)
         deviceTypes = root.findall('device')
         for dv in deviceTypes:
             bodyFile = dv.findtext('body')
@@ -177,8 +184,15 @@ class ConfigReader(object):
                 for sn, s in sensorList.items():
                     deviceBody.addSensor(sn, s(deviceBody, paramList.get(sn, {})))
                 sim.addObject(deviceBody)
-                pos = [randomHalf(p) for p in startSpace]
-                deviceBody.setPosition(pos)
+
+                inRegion = choice(startRegions)
+
+                wallPadding = 0.15
+                x = uniform(inRegion[0][0]+wallPadding, inRegion[1][0]-wallPadding)
+                y = uniform(inRegion[0][1]+wallPadding, inRegion[1][1]-wallPadding)
+                z = uniform(inRegion[0][2]+wallPadding, inRegion[1][2]-wallPadding)
+
+                deviceBody.setPosition((x,y,z))
                 deviceBody.deviceTask = taskClass(deviceBody)
 
         return sim
