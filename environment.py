@@ -7,61 +7,6 @@ import numpy as np
 
 from time import time
 
-class FieldDrawingManager():
-    import visual as v
-    def __init__(self):
-        self.sphereDisplay = {}
-        self.maxI = -50
-        self.minI = -50
-        self.lThreshold = 1.0
-
-    def addWavefront(self, sphere):
-        if sphere not in self.sphereDisplay:
-            actor = self.v.sphere()
-            actor.pos = sphere.center
-            actor.radius = sphere.radius
-            self.sphereDisplay[sphere] = actor
-
-    def removeWavefront(self, sphere):
-        s = self.sphereDisplay.pop(sphere, None)
-        if s is not None:
-            s.visible= False
-            #del s
-
-    def reset(self):
-        for s in self.sphereDisplay.values():
-            s.visible = False
-        self.sphereDisplay.clear()
-    
-    def refreshIntensityLimits(self):
-        # search through spheres to find max, min
-        spheres = self.sphereDisplay.keys()
-        self.maxI = max(spheres, key=lambda x:x.intensity).intensity
-        self.minI = min(spheres, key=lambda x:x.intensity).intensity
-
-
-    def updateView(self, currentSpheres):
-        actors = self.sphereDisplay
-        toRemove = [s for s in actors if s not in currentSpheres or s.radius > self.lThreshold]
-        toAdd = [s for s in currentSpheres if s not in actors and s.radius <= self.lThreshold]
-
-        for s in toRemove:
-            self.removeWavefront(s)
-
-        for s in toAdd:
-            self.addWavefront(s)
-
-        # update next tick...
-        for s, g in self.sphereDisplay.items():
-            if s.intensity is None:
-                continue
-            i = np.log(s.intensity)
-            
-            intensityColor = Heatmap.getHeatmapValue(i, self.minI, self.maxI)
-            g.color =  (0.0,1.0,0.0)#intensityColor
-            g.opacity = 0.2
-            g.radius = s.radius
-
 class PhysicalEnvironment(object):
     def __init__(self):
         super(PhysicalEnvironment, self).__init__()
@@ -71,7 +16,6 @@ class PhysicalEnvironment(object):
         self.massScale = 1.0 
         self.forceScale = self.massScale*self.lengthScale
         self.fieldList = {}
-        self.drawField = False
 
         self.world.setGravity((0,-9.81*self.forceScale,0))
         self.world.setCFM(1e-5)
@@ -83,14 +27,11 @@ class PhysicalEnvironment(object):
         self.objectList = []        
 
     def addField(self, fieldName, f):
-        self.fieldList[fieldName] = {'field':f, 'display':{}}
+        self.fieldList[fieldName] = f
 
     def addFieldObject(self, fieldName, o):
         # TODO: error behavior
-        fieldInfo = self.fieldList[fieldName]
-        fieldInfo['field'].addObject(o)
-        d = FieldDrawingManager() # TODO: option to specify which spheres must be drawn
-        fieldInfo['display'][o] = d
+        fieldInfo = self.fieldList[fieldName].addObject(o)
 
     def addObject(self, obj):
         # assumes body is already in our world, and collision geoms are in our space
@@ -109,14 +50,8 @@ class PhysicalEnvironment(object):
         for f in self.fieldList.values(): # TODO: make the fields into encapsualted 'physics objects'
             for i in range(div):
                 oldTime += dt/div
-                field = f['field']
-                field.update(oldTime)
-            if self.drawField:
-                managers = f['display']
-                for obj, wfs in field.objects.items():
-                    display = managers[obj]
-                    display.updateView(wfs)
-
+                f.update(oldTime)
+ 
         self.space.collide(None, self.near_callback)
         self.world.quickStep(dt)
         self.contactGroup.empty()

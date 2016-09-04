@@ -2,3 +2,4 @@
 *.pyo
 profile_*
 odeViz/examples
+experimental/
