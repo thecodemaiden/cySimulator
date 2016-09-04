@@ -34,15 +34,12 @@ if __name__ == '__main__':
 
     def benchmarkFile(filename):
         for i in range(10):
-            doVis = True
+            doVis = False
             (s, r) = runSimulationFile(filename, doVis)
             logger.info('Simulation time: {:4.2f}\t Clock time: {:4.2f}'.format(s, r))
             logger.handlers = []
             sleep(1)
-    names = ['sim05_noradio.xml','sim10_noradio.xml','sim15_noradio.xml','sim20_noradio.xml','sim25_noradio.xml']
-    for n in names:
-        print("\t--- {} ---\t". format(n))
-        benchmarkFile('profile_setup/'+n)
+    benchmarkFile('sim_setup.xml')
     import visual as v
     v.rate(1)
     v.exit()

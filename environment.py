@@ -137,6 +137,7 @@ class SimulationManager(PhysicalEnvironment, ComputeEnvironment):
             pass
         finally:
             # TODO: put this in cleanup function
-            self.visualizer.canvas.window.delete_all()
+            if self.visualizer is not None:
+                self.visualizer.canvas.window.delete_all()
 
 
