@@ -1,13 +1,12 @@
 # README #
 
-This README would normally document whatever steps are necessary to get your application up and running.
-
+This is an IoT simulator... more details to come.
 
 ### How do I get set up? ###
 
 You need Python 2.7 with the following modules:
 
-* vtk
+* vPython (visual)
 * [pyode](https://bitbucket.org/odedevs/ode/downloads)
 * numpy
 
