@@ -25,9 +25,9 @@ class QuadHover(DeviceTask):
 
     def loop(self):
         if self.stayStill:
-            self.device.setPidTarget([0,0,0])
+            self.device.setPidTarget([-1, 0,0,0])
         else:
-            self.device.setPidTarget([0.05, 0, 0])
+            self.device.setPidTarget([-1, 0.05, 0, 0])
         dt = self.environment.time - self.lastTime
         # send a message to radio a1b2c3d4e5
         if self.hasRadio:

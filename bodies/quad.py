@@ -57,10 +57,15 @@ class Quadcopter(Device):
         self.pid = PidController(2, 0, 0)
 
     def getPidTarget(self):
-        return self.pid.target
+        return [self.pid.thrustTarget]+list(self.pid.attTarget)
 
     def setPidTarget(self, targ):
-        self.pid.target = array(targ) # format checking???
+        thrustTarget = targ[0]
+        if thrustTarget < 0:
+            thrustTarget = self.totalThrustNeeded() # TODO: is this adjusted for angle...?
+
+        self.pid.attTarget = array(targ[1:4]) # format checking???
+        self.pid.thrustTarget = thrustTarget
 
     def makePhysicsBody(self):
         physicsWorld = self.environment.world
@@ -146,7 +151,8 @@ class Quadcopter(Device):
             dv.update(dt)
 
         pid_error = self.pid.update(self, dt)
-        thrust_adj = self.pidOutputToMotors(pid_error, self.totalThrustNeeded())
+
+        thrust_adj = self.pidOutputToMotors(pid_error, self.pid.thrustTarget)
         self.motorW = thrust_adj
 
         # apply thrust and yaw torque at each prop
@@ -165,7 +171,8 @@ class Quadcopter(Device):
     
 class PidController(object):
     def __init__(self, Kp, Ki, Kd):
-        self.target = array([0.0,0.0,0.0])
+        self.attTarget = array([0.0,0.0,0.0])
+        self.thrustTarget = 0
         self.kp = Kp
         self.ki = Ki
         self.kd = Kd
@@ -186,7 +193,7 @@ class PidController(object):
         #thetadot = array(copter.getAngularVelocity())
         fs = copter.environment.forceScale
 
-        nowError = self.target - theta
+        nowError = self.attTarget - theta
         dError = (nowError - self.lastError)/dt
 
         err = self.kp * nowError + self.ki * self.integral + self.kd * dError
@@ -235,7 +242,7 @@ class PidRateAtt(object):
         self.pitchOutput = 0.0
         self.yawOutput = 0.0
 
-        self.target = [0.,0.,0.]
+        self.attTarget = [0.,0.,0.]
 
         self.thrustTarget = 0.0
         
@@ -248,9 +255,9 @@ class PidRateAtt(object):
         y = arcsin(-R[6]);            #theta
         p   = arctan2(R[3], R[0]);    #psi
 
-        self.rollPid.target = self.target[0]
-        self.pitchPid.target = self.target[1]
-        self.yawPid.target = self.target[2]
+        self.rollPid.target = self.attTarget[0]
+        self.pitchPid.target = self.attTarget[1]
+        self.yawPid.target = self.attTarget[2]
 
         #self.thrustTarget = targets[3]
 

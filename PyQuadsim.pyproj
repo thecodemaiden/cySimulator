@@ -67,6 +67,9 @@
     <Compile Include="object_types.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="programs\sendRSSI.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="programs\__init__.py">
       <SubType>Code</SubType>
     </Compile>

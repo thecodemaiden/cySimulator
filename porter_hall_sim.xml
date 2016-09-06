@@ -3,7 +3,7 @@
     <param propSpeed="1"/>
     <param minIntensity="1e-9"/>
   </field>
-  <field name="RF_Semantic" class="SemanticField">
+  <field name="RF" class="VectorField">
     <param propSpeed="3e8"/>
     <param minIntensity="1e-9"/>
   </field>
@@ -11,10 +11,11 @@
     <count>1</count>
     <body>bodies/quadcopter.xml</body>
     <sensor name ="acc" class="Accelerometer"/>
-     <sensor name ="radio" class="SemanticRadio"> 
+     <sensor name ="radio" class="Radio"> 
       <param channel="17"/>
     </sensor>
-    <program>QuadHover</program>
+    <program>SendRssi</program>
+    <position>0,-1.05, 0</position>
   </device>
    <layout file="layout/porter_hall.xml">
     <startRegion>(-6.065, -1.05, -4.385),(6.065,1.05,4.385)</startRegion>
