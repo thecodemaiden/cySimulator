@@ -1,0 +1,42 @@
+<!-- 12.13m x 2.10m x 8.77m -->
+<layout>
+  <room name="Room1">
+    <wall name="ceiling">
+      <center>0, 1.05, 0</center>
+      <size>12.13, 0.1, 8.77</size>
+    </wall>
+    <wall name="floor">
+      <center>0,-1.05, 0</center>
+      <size>12.13, 0.1, 8.77</size>
+    </wall>
+    <wall name="labWall">
+      <center>-6.065, 0, 0</center>
+      <size>0.1, 2.10, 8.77</size>
+    </wall>
+    <wall name="ceeWall">
+      <center>6.065, 0, 0</center>
+      <size>0.1, 2.10, 8.77</size>
+    </wall>
+    <wall name="exitWall">
+      <center>0, 0, -4.385</center>
+      <size>12.13, 2.10, 0.1</size>
+    </wall>
+    <wall name="hallwayWall">
+      <center>0, 0, 4.385</center>
+      <size>12.13,2.10, 0.1</size>
+    </wall>
+    <!-- TODO: add hallway hole-->
+    <wall name="column1">
+      <center>1.165, 0, 0.715</center>
+      <size>0.56, 2.10, 0.56</size>
+    </wall>
+    <wall name="column2">
+      <center>-3.845, 0, 0.715</center>
+      <size>0.56, 2.10, 0.56</size>
+    </wall>
+    <wall name="trash">
+      <center>5.705, -0.56, 1.47</center>
+      <size>0.72, 0.98, 1.05</size>
+    </wall>
+  </room>
+</layout>

@@ -5,6 +5,7 @@ class PhysicalObject(object):
     def __init__(self, environment):
         self.environment = environment
         self.logger = None
+        self.isReflective = False
 
     def updatePhysics(self, dt):
         pass

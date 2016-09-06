@@ -20,6 +20,7 @@ class QuadHover(DeviceTask):
         coinFlip = randint(0,1)
         self.stayStill = coinFlip == 0
         self.lastTime = self.environment.time
+
         return 10
 
     def loop(self):

@@ -109,6 +109,8 @@
   <ItemGroup>
     <Content Include="bodies\quadcopter.xml" />
     <Content Include="layout\example_layout.xml" />
+    <Content Include="layout\porter_hall.xml" />
+    <Content Include="porter_hall_sim.xml" />
     <Content Include="sim_setup.xml" />
   </ItemGroup>
   <Import Project="$(PtvsTargetsFile)" Condition="Exists($(PtvsTargetsFile))" />

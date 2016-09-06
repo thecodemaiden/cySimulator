@@ -10,6 +10,7 @@ class Wall(PhysicalObject):
         self.centerPos = tuple(c*ls for c in center_pos)
         self.color = (0.5, 0.5, 0)
         self.makePhysicsBody()
+        self.isReflective = True
 
     def __repr__(self):
         return (self.dim, self.centerPos)

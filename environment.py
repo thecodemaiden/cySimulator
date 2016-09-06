@@ -24,7 +24,8 @@ class PhysicalEnvironment(object):
         self.time = 0
         self.contactGroup = ode.JointGroup()
 
-        self.objectList = []        
+        self.objectList = [] 
+        self.obstacleList = []       
 
     def addField(self, fieldName, f):
         self.fieldList[fieldName] = f
@@ -32,6 +33,9 @@ class PhysicalEnvironment(object):
     def addFieldObject(self, fieldName, o):
         # TODO: error behavior
         fieldInfo = self.fieldList[fieldName].addObject(o)
+
+    def addObstacle(self, obs):
+        self.obstacleList.append(obs)
 
     def addObject(self, obj):
         # assumes body is already in our world, and collision geoms are in our space
@@ -51,6 +55,7 @@ class PhysicalEnvironment(object):
             for i in range(div):
                 oldTime += dt/div
                 f.update(oldTime)
+                f.intersectObstacles(self.obstacleList)
  
         self.space.collide(None, self.near_callback)
         self.world.quickStep(dt)
@@ -111,7 +116,7 @@ class SimulationManager(PhysicalEnvironment, ComputeEnvironment):
         self.time += self.dt
 
     def runloop(self):
-        timeout = 20.0
+        timeout = 50.0
         startTime = time()
         if self.visualizer is not None:
             self.visualizer.startTime = time()

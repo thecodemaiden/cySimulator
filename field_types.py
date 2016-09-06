@@ -20,10 +20,10 @@ class FieldObject(object):
 
 class FieldSphere(object):
     startR = 0.00001
-    def __init__(self, center, totalPower, startTime, data=None):
+    def __init__(self, center, speed, totalPower, startTime, data=None):
         # TODO: waves have wavelengths
         self.totalPower = totalPower
-        self.center = center
+        self.center = tuple(center)
         self.radius = self.startR # TODO: make this an epsilon?
         self.lastRadius = 0
         self.intensity = None# LOL wut
@@ -31,10 +31,46 @@ class FieldSphere(object):
         self.t1 = startTime
         self.center_2 = sum([k*k for k in self.center])
         self.obj_distances = {}
+        self.speed = speed
+        self.reflect_limits = [-np.inf]*3+[np.inf]*3 #[minX, minY, minZ, maxX, maxY, maxZ]
 
-    def prepareToDiscard(self, t, speed):
+    def reflectOffSurface(self, surfPos, surfSize):
+        # first get the vector from our source to the surface
+        # so we can reflect ourselves on the other side of that
+        dPos = [a-b for a,b in zip(surfPos, self.center)] #surf-self
+
+        reflectPos = [a+b for a,b in zip(dPos, surfPos)]
+
+        newLimits = [a+b for a,b in zip(surfPos, surfSize)]+[a-b for a,b in zip(surfPos, surfSize)]
+
+        # really naive: waves don't exist above/below the surface (plane reflection...)
+        # determine the 'side' of the surface we are on, and don't spread back around the object
+        # ignore edges...
+        if dPos[0] > 0:
+            # surf_x > self_x, so 
+            self.reflect_limits[0] = -np.inf
+        if dPos[0] < 0:
+            self.reflect_limits[3] = np.inf
+            self.r
+        if dPos[1] > 0:
+            # surf_x > self_x, so 
+            self.reflect_limits[1] =- np.inf
+        if dPos[1] < 0:
+            self.reflect_limits[4] = -np.inf
+        if dPos[2] > 0:
+            # surf_x > self_x, so 
+            self.reflect_limits[2] = -np.inf
+        if dPos[2] < 0:
+            self.reflect_limits[2] = -np.inf
+
+        reflected = FieldSphere(reflectPos, self.speed, self.totalPower, self.t1, self.data)
+        reflected.reflect_limits = self.reflect_limits
+
+        return reflected
+
+    def prepareToDiscard(self, t):
         self.lastRadius = self.radius
-        self.radius = speed*(t-self.t1)
+        self.radius = self.speed*(t-self.t1)
        
         if self.radius > 0:
             self.intensity = self.totalPower/(self.radius*self.radius)
@@ -62,7 +98,7 @@ class FieldSphere(object):
 
 
 class Field(object):
-    sharedThreadPool = ThreadPool(8) 
+    sharedThreadPool = ThreadPool(4) 
     def __init__(self, propSpeed, minI=1e-10):
         # TODO: replace with sphereList, mapping sphere to producing object
         self.objects = {}
@@ -105,7 +141,6 @@ class Field(object):
             pos2 = sum([k*k for k in pos])
             objInfoTable[o] = (pos, pos2)
 
-
         repeatInfo = it.repeat(objInfoTable)
         allSpheresList = self._sphereGenerator()
         together = it.izip(allSpheresList, repeatInfo)
@@ -118,10 +153,25 @@ class Field(object):
         for o,sList in intersectionsByObject.items():
             # TODO: combine wavefronts that interfere
             o.detectField(sList[0])
-            
+
+    def _obstacleThreaded(self, args):
+        s = args[0]
+        obs = args[1]
+        bouncy = None
+        # if the distance from us to the obstacle <= our radius, it intersects
+        depth = obs.geom.pointDepth(s.center)
+        if depth < 0 and -depth <= s.radius:
+             bouncy = s.reflectOffSurface(obs.centerPos, obs.dim)
+        return bouncy
+        
+
+    def intersectObstacles(self, obsList):
+        allSpheresList = self._sphereGenerator()
+        for obs in obsList:
+            rep = it.repeat(obs)
+            newSpheres = self.sharedThreadPool.map(self._obstacleThreaded, it.izip(allSpheresList, rep))
 
             
-
     def update(self, now):
         # TODO: modify in-place
         allObjects = self.objects.iterkeys()
@@ -133,7 +183,7 @@ class Field(object):
                 newSphere.obj_distances[o] = 0
                 sphereList.append(newSphere)
             for s in sphereList:
-                s.prepareToDiscard(now, self.speed)
+                s.prepareToDiscard(now)
                 if s.intensity is not None and s.intensity < self.minI:
                     toRemove.append(s)
             newList = [s for s in sphereList if s not in toRemove]
@@ -141,7 +191,7 @@ class Field(object):
         self.performIntersections(now)
 
     def spawnSphereFromObject(self, o, t):
-        newSphere = FieldSphere(o.getPosition(), o.getRadiatedValue(), t)
+        newSphere = FieldSphere(o.getPosition(), self.speed, o.getRadiatedValue(), t)
         return newSphere
 
 class VectorField(Field):
@@ -158,7 +208,7 @@ class SemanticField(Field):
     def spawnSphereFromObject(self, o,t):
         val = o.getRadiatedValue()
         if val is not None:
-            newSphere = FieldSphere(o.getPosition(), val[0], t, val[1])
+            newSphere = FieldSphere(o.getPosition(), self.speed, val[0], t, val[1])
             return newSphere
         return None
 

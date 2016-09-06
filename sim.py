@@ -39,10 +39,14 @@ if __name__ == '__main__':
             logger.info('Simulation time: {:4.2f}\t Clock time: {:4.2f}'.format(s, r))
             logger.handlers = []
             sleep(1)
-    benchmarkFile('sim_setup.xml')
-    import visual as v
-    v.rate(1)
-    v.exit()
+    #names = ['sim05_radio.xml','sim10_radio.xml','sim15_radio.xml','sim20_radio.xml','sim25_radio.xml']
+    #for n in ['sim100_radio.xml']:
+    #    print("\t--- {} ---\t". format(n))
+    #    benchmarkFile('profile_setup/'+n)
+    runSimulationFile('porter_hall_sim.xml', True)
+    #import visual as v
+    #v.rate(1)
+   # v.exit()
 
 
 

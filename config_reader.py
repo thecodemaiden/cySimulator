@@ -151,6 +151,7 @@ class ConfigReader(object):
         walls = cr.readLayoutFile(layoutFile)
         for w in walls:
             sim.addObject(w)
+            sim.addObstacle(w)
 
         # now add the devices
         slack = 0.1
