@@ -25,6 +25,9 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="bodies\quad.py" />
+    <Compile Include="bodies\raspberry_pi.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="bodies\__init__.py">
       <SubType>Code</SubType>
     </Compile>
@@ -67,10 +70,16 @@
     <Compile Include="object_types.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="programs\requestRSSI.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="programs\sendRSSI.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="programs\__init__.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="rf_fields.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="sensors\accelerometer.py" />
@@ -111,6 +120,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="bodies\quadcopter.xml" />
+    <Content Include="bodies\raspberry_pi.xml" />
     <Content Include="layout\example_layout.xml" />
     <Content Include="layout\porter_hall.xml" />
     <Content Include="porter_hall_sim.xml" />

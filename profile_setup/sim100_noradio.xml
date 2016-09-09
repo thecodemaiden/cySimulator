@@ -1,6 +1,6 @@
-<sim log="sim_test.log">
+<sim log="sim100_radio.log">
   <field name="RF" class="VectorField">
-    <param propSpeed="3e8"/>
+    <param propSpeed="1"/>
     <param minIntensity="1e-9"/>
   </field>
   <field name="RF_Semantic" class="SemanticField">
@@ -8,12 +8,9 @@
     <param minIntensity="1e-9"/>
   </field>
   <device namePrefix="Quad">
-    <count>3</count>
+    <count>100</count>
     <body>bodies/quadcopter.xml</body>
     <sensor name ="acc" class="Accelerometer"/>
-     <sensor name ="radio" class="SemanticRadio"> 
-       <param channel="17"/>
-    </sensor>
     <program>QuadHover</program>
   </device>
    <layout file="layout/example_layout.xml">

@@ -13,6 +13,13 @@ class PhysicalObject(object):
     def onVisualizationStart(self):
         pass
 
+    def setPosition(self, pos):
+        x,y,z = [self.environment.lengthScale*c for c in pos]
+        self.physicsBody.setPosition((x,y,z))
+
+    def getPosition(self):
+        return self.physicsBody.getPosition()
+
 class ComputationalObject(object):
     """ Common methods for objects that are part of the computational simulation """
     def __init__(self, environment):
@@ -58,7 +65,4 @@ class Device(ComputationalObject, PhysicalObject):
     def getSensor(self, name):
         return self.sensors.get(name, None)
 
-    def setPosition(self, pos):
-        x,y,z = [self.environment.lengthScale*c for c in pos]
-        self.physicsBody.setPosition((x,y,z))
 

@@ -1,5 +1,5 @@
 from field_types import FieldObject
-
+import numpy
 from random import randint
 
 class RadioPacket:
@@ -12,25 +12,20 @@ class SemanticRadio(FieldObject):
     """ A 'radio wave' representation where symbols are associated with wavefronts"""
     def __init__(self, entity, params):
         self.device = entity
-
         self.rx_sensitivity = float(params.get('rx_sens', 1e-10)) # in W
         self.tx_power = float(params.get('tx_pow', 0.01))
         self.inBuffer = [] # list of RadioPackets
         self.outBuffer = []
+        self.lastRssi = 0
         self.channel = int(params['channel'])
-        if params.get('address') == None:
+        add = params.get('address')
+        if add == None:
             # make up an address, hope it doesn't collide
-            add = randint(0xa0a0a0a0a0L, 0xfefefefefeL)
+            add = randint(0xb000000000L, 0xfefefefefeL)
         else:
-            add = long(params['address'])
+            add = long(add, 16)
         self.address = add
-
-
         self.device.environment.addFieldObject('RF_Semantic', self)
-
-    def update(self, dt):
-        # TODO: tx power up time? rx delays?
-        pass
 
     def detectField(self, fieldValue):
         """Register any readings, if necessary. fieldvalue is a FieldSphere """
@@ -40,6 +35,8 @@ class SemanticRadio(FieldObject):
             # TODO: multiple addresses + channels possible!
             if packet.address == self.address and packet.channel == self.channel:
                 self.inBuffer.append(packet.message) # TODO: timestamp? 
+                self.lastRssi = 10*numpy.log10(1000*intensity)
+
 
     def writePacket(self, address, channel, message):
         pack = RadioPacket(address, channel, message)
@@ -61,11 +58,22 @@ class SemanticRadio(FieldObject):
             return info
         return None
 
+
+    def getPendingEmission(self):
+        if len(self.emissionQueue) == 0:
+            return None
+        return self.emissionQueue[0]
+
+    def getRssi(self):
+        return self.lastRssi
+
+    def update(self, dt):
+        pass
+        # TODO: tx power up time?  rx delays?
+        #now = self.environment.time
+        #for val in self.emissionQueue[:]:
+        #    if val[2] <= now:
+        #        self.emissionQueue.remove(val)
+
     def getPosition(self):
         return self.device.physicsBody.getPosition()
-
-    def getMaxRadiatedValue(self):
-        return self.tx_power
-
-
-

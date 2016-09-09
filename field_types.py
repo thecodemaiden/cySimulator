@@ -17,6 +17,9 @@ class FieldObject(object):
         """Register any readings, if necessary. fieldvalue is a FieldSphere
            Return True if this wave was handled, False otherwise (and it may show up again) """
         return False
+    def getPendingEmission(self):
+        # return (intensity, startTime, endTime)
+        pass
 
 class FieldSphere(object):
     startR = 0.00001
@@ -32,7 +35,7 @@ class FieldSphere(object):
         self.center_2 = sum([k*k for k in self.center])
         self.obj_distances = {}
         self.speed = speed
-        self.reflect_limits = [-np.inf]*3+[np.inf]*3 #[minX, minY, minZ, maxX, maxY, maxZ]
+        self.reflect_limits = [None, None] # xy angle, zy angle
 
     def reflectOffSurface(self, surfPos, surfSize):
         # first get the vector from our source to the surface
@@ -92,8 +95,12 @@ class FieldSphere(object):
 
     @classmethod
     def copyAtT(cls, oldS, t, speed):
-        newS =  cls(oldS.center, oldS.totalPower, oldS.t1)
-        newS.radius = speed*t
+        newS =  cls(oldS.center, oldS.speed, oldS.totalPower, oldS.t1)
+        newS.radius = speed*(t-oldS.t1)
+        newS.data = oldS.data
+        if newS.radius > 0:
+            newS.intensity = newS.totalPower/(newS.radius*newS.radius)
+
         return newS
 
 
@@ -124,8 +131,10 @@ class Field(object):
             for o in self.objects:
                 objInfo = info[o]
                 if s.calculate(o, objInfo[0], objInfo[1]):
-                    toa = (objInfo[0][0] - s.center[0])/self.speed + s.t1
-                    intersectInfo[o] = s
+                    dPos = np.subtract(objInfo[0], s.center)
+                    dt = np.linalg.norm(dPos)/self.speed
+                    properCopy = FieldSphere.copyAtT(s, s.t1+dt, self.speed)
+                    intersectInfo[o] = properCopy
         return intersectInfo
                 
 
@@ -176,7 +185,6 @@ class Field(object):
         # TODO: modify in-place
         allObjects = self.objects.iterkeys()
         for o in allObjects:
-            toRemove = []
             sphereList = self.objects[o]
             newSphere = self.spawnSphereFromObject(o, now) # TODO: check frequency!
             if newSphere is not None:
@@ -184,15 +192,21 @@ class Field(object):
                 sphereList.append(newSphere)
             for s in sphereList:
                 s.prepareToDiscard(now)
+        self.performIntersections(now)
+        for o in allObjects:
+            toRemove = []
+            for s in self.objects[o]:
                 if s.intensity is not None and s.intensity < self.minI:
-                    toRemove.append(s)
+                        toRemove.append(s)
             newList = [s for s in sphereList if s not in toRemove]
             self.objects[o] = newList
-        self.performIntersections(now)
 
     def spawnSphereFromObject(self, o, t):
         newSphere = FieldSphere(o.getPosition(), self.speed, o.getRadiatedValue(), t)
         return newSphere
+
+    def combineValues(self, sphereList):
+        pass
 
 class VectorField(Field):
     # TODO: real vector shit

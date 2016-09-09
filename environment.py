@@ -55,7 +55,6 @@ class PhysicalEnvironment(object):
             for i in range(div):
                 oldTime += dt/div
                 f.update(oldTime)
-                f.intersectObstacles(self.obstacleList)
  
         self.space.collide(None, self.near_callback)
         self.world.quickStep(dt)
@@ -135,7 +134,10 @@ class SimulationManager(PhysicalEnvironment, ComputeEnvironment):
                         chr = msvcrt.getche()
                         if ord(chr) == 27:
                             break
-                if time()-startTime >= timeout:
+                        elif chr == 't':
+                            print self.time
+                #if time()-startTime >= timeout:
+                if self.time-startTime >= timeout:
                     break
               
         except KeyboardInterrupt:

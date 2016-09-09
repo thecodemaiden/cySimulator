@@ -55,6 +55,7 @@ class Quadcopter(Device):
         self.moved = False
 
         self.pid = PidController(2, 0, 0)
+        self.pid.thrustTarget = -1
 
     def getPidTarget(self):
         return [self.pid.thrustTarget]+list(self.pid.attTarget)

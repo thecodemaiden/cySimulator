@@ -122,6 +122,7 @@ class ConfigReader(object):
         fieldDescs = root.findall('field')
         for f in fieldDescs:
             name = f.attrib['name']
+            print cr._extractListStr(name)
             className = f.attrib['class']
             try:
                 fieldClass = getattr(field_types, className)
@@ -159,11 +160,15 @@ class ConfigReader(object):
         for dv in deviceTypes:
             bodyFile = dv.findtext('body')
             namePrefix = dv.attrib.get('namePrefix', 'Device')
+            devName = dv.attrib.get('name', None)
             sensorSpecs = dv.findall('sensor')
             taskName = dv.findtext('program')
             taskClass = cr.loadDeviceTask(taskName)
             sensorList = {}
             paramList = {}
+            position = dv.findtext('position')
+            if position is not None:
+                position = [float(_) for _ in cr._extractListStr(position)]
             for s in sensorSpecs:
                 className = s.attrib['class']
                 try:
@@ -179,20 +184,23 @@ class ConfigReader(object):
             nDevices = int(dv.findtext('count', 1))
             for i in range(nDevices):
                 deviceBody = cr.readBodyFile(bodyFile)
-                # todo: what about teh program
-                devName = '{}_{:3d}'.format(namePrefix, i)
+
+                if devName is None:
+                    devName = '{}_{:3d}'.format(namePrefix, i)
                 deviceBody.name = devName
                 for sn, s in sensorList.items():
                     deviceBody.addSensor(sn, s(deviceBody, paramList.get(sn, {})))
                 sim.addObject(deviceBody)
 
-                inRegion = choice(startRegions)
+                if position is None:
+                    inRegion = choice(startRegions)
 
-                wallPadding = 0.15
-                x = uniform(inRegion[0][0]+wallPadding, inRegion[1][0]-wallPadding)
-                y = uniform(inRegion[0][1]+wallPadding, inRegion[1][1]-wallPadding)
-                z = uniform(inRegion[0][2]+wallPadding, inRegion[1][2]-wallPadding)
-
+                    wallPadding = 0.15
+                    x = uniform(inRegion[0][0]+wallPadding, inRegion[1][0]-wallPadding)
+                    y = uniform(inRegion[0][1]+wallPadding, inRegion[1][1]-wallPadding)
+                    z = uniform(inRegion[0][2]+wallPadding, inRegion[1][2]-wallPadding)
+                else:
+                    x,y,z = position
                 deviceBody.setPosition((x,y,z))
                 deviceBody.deviceTask = taskClass(deviceBody)
 
