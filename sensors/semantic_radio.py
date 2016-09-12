@@ -56,8 +56,8 @@ class SemanticRadio(FieldObject):
     def getRadiatedValues(self):
         if len(self.outBuffer) > 0:
             info = self.outBuffer.pop(0)
-            return info
-        return (None, None)
+            return [info]
+        return [(None, None)]
 
 
     def getPendingEmission(self):

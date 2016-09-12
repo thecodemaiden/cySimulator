@@ -257,7 +257,7 @@ class SemanticField(Field):
                 continue
             freq, val = info[0]
             data = info[1]
-            newSphere = FieldSphere(o.getPosition(), self.speed, freq, power, t, data)
+            newSphere = FieldSphere(o.getPosition(), self.speed, freq, val, t, data)
             sphereList.append(newSphere)
         return sphereList
 

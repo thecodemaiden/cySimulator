@@ -41,7 +41,7 @@ class Radio(FieldObject):
             #TODO: check address... ?!
 
     def getRadiatedValues(self):
-        return (0, 0) # XXX: HAX!!self.tx_power
+        return [(0, 0)] # XXX: HAX!!self.tx_power
 
     def getPosition(self):
         return self.device.physicsBody.getPosition()
