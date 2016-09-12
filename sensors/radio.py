@@ -10,6 +10,7 @@ class Radio(FieldObject):
         self.rx_sensitivity = float(params.get('rx_sens', 1e-10)) # in W
         self.tx_power = float(params.get('tx_pow', 0.01))
         self.channel = int(params['channel'])
+        self.transFrequency = 2.4e9 + self.channel*1e6
         add = params.get('address')
         if add == None:
             # make up an address, hope it doesn't collide
@@ -39,8 +40,8 @@ class Radio(FieldObject):
             self.lastRssi = 10*numpy.log10(1000*intensity)
             #TODO: check address... ?!
 
-    def getRadiatedValue(self):
-        return 0 # XXX: HAX!!self.tx_power
+    def getRadiatedValues(self):
+        return (0, 0) # XXX: HAX!!self.tx_power
 
     def getPosition(self):
         return self.device.physicsBody.getPosition()

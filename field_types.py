@@ -6,11 +6,14 @@ from multiprocessing.pool import ThreadPool
 from collections import defaultdict
 import itertools as it
 
+def fixPhase(a):
+    return ( a + np.pi) % (2 * np.pi ) - np.pi
+
 class FieldObject(object):
     def getPosition(self):
         pass
-    def getRadiatedValue(self):
-        return None
+    def getRadiatedValues(self):
+        return [(None, None)]
     def getMaxRadiatedValue(self):
         return None # DUNNO
     def detectField(self, fieldValue):
@@ -23,7 +26,7 @@ class FieldObject(object):
 
 class FieldSphere(object):
     startR = 0.00001
-    def __init__(self, center, speed, totalPower, startTime, data=None):
+    def __init__(self, center, speed, frequency, totalPower, startTime, data=None):
         # TODO: waves have wavelengths
         self.totalPower = totalPower
         self.center = tuple(center)
@@ -35,6 +38,9 @@ class FieldSphere(object):
         self.center_2 = sum([k*k for k in self.center])
         self.obj_distances = {}
         self.speed = speed
+        self.isPlanar = False
+        self.frequency = frequency
+        self.onSurface = [0,0,0,0] # [a, b, c, d] for ax+by+cz = d
         self.reflect_limits = [None, None] # xy angle, zy angle
 
     def reflectOffSurface(self, surfPos, surfSize):
@@ -66,7 +72,7 @@ class FieldSphere(object):
         if dPos[2] < 0:
             self.reflect_limits[2] = -np.inf
 
-        reflected = FieldSphere(reflectPos, self.speed, self.totalPower, self.t1, self.data)
+        reflected = FieldSphere(reflectPos, self.speed, self.frequency, self.totalPower, self.t1, self.data)
         reflected.reflect_limits = self.reflect_limits
 
         return reflected
@@ -95,7 +101,7 @@ class FieldSphere(object):
 
     @classmethod
     def copyAtT(cls, oldS, t, speed):
-        newS =  cls(oldS.center, oldS.speed, oldS.totalPower, oldS.t1)
+        newS =  cls(oldS.center, oldS.speed, oldS.frequency, oldS.totalPower, oldS.t1)
         newS.radius = speed*(t-oldS.t1)
         newS.data = oldS.data
         if newS.radius > 0:
@@ -161,7 +167,9 @@ class Field(object):
                 intersectionsByObject[o].append(intersect[o])
         for o,sList in intersectionsByObject.items():
             # TODO: combine wavefronts that interfere
-            o.detectField(sList[0])
+            newWave = self.combineValues(sList)
+            o.detectField(newWave)
+           
 
     def _obstacleThreaded(self, args):
         s = args[0]
@@ -178,16 +186,16 @@ class Field(object):
         allSpheresList = self._sphereGenerator()
         for obs in obsList:
             rep = it.repeat(obs)
-            newSpheres = self.sharedThreadPool.map(self._obstacleThreaded, it.izip(allSpheresList, rep))
+            newSpheres = self.sharedThreadPool.map(self._obstacleThreaded, it.izip(allSpheresList, rep))              
 
-            
+             
     def update(self, now):
         # TODO: modify in-place
         allObjects = self.objects.iterkeys()
         for o in allObjects:
             sphereList = self.objects[o]
-            newSphere = self.spawnSphereFromObject(o, now) # TODO: check frequency!
-            if newSphere is not None:
+            newSpheres = self.spawnSphereFromObject(o, now) # TODO: check frequency!
+            for newSphere in newSpheres:
                 newSphere.obj_distances[o] = 0
                 sphereList.append(newSphere)
             for s in sphereList:
@@ -202,11 +210,18 @@ class Field(object):
             self.objects[o] = newList
 
     def spawnSphereFromObject(self, o, t):
-        newSphere = FieldSphere(o.getPosition(), self.speed, o.getRadiatedValue(), t)
-        return newSphere
+        sphereList = []
+        allNew = o.getRadiatedValues()
+        for info in allNew:
+            if info is None or info[0] <= 0 or info[1] <= 0:
+                continue
+            freq, power = info
+            newSphere = FieldSphere(o.getPosition(), self.speed, freq, power, t)
+            sphereList.append(newSphere)
+        return sphereList
 
     def combineValues(self, sphereList):
-        pass
+        return sphereList[0]
 
 class VectorField(Field):
     # TODO: real vector shit
@@ -219,54 +234,32 @@ class SemanticField(Field):
         super(SemanticField, self).__init__(propSpeed)
         self.minI = float(minIntensity)
 
+    def combineValues(self, sphereList):
+        if len(sphereList) == 1:
+            return sphereList[0]
+
+        intensities, phases = zip(*[(s.intensity, (2*np.pi*s.radius*s.frequency)) for s in sphereList])
+        polard = np.dot(intensities, np.exp(1j*np.array(phases)))
+        strongest = intensities.index(max(intensities))
+        polar_sum = np.sum(polard)
+        newIntensity = np.abs(polar_sum)
+
+        newSphere = FieldSphere((0,0,0), 0, 0, 0, 0, sphereList[strongest].data)
+        newSphere.intensity = newIntensity
+
+        return newSphere
+
     def spawnSphereFromObject(self, o,t):
-        val = o.getRadiatedValue()
-        if val is not None:
-            newSphere = FieldSphere(o.getPosition(), self.speed, val[0], t, val[1])
-            return newSphere
-        return None
-
-    '''
-class FieldManagementThread(threading.Thread):
-    def __init__(self):
-        super(FieldManagementThread, self).__init__()
-        self.daemon = True
-        self.fields = {}
-        self.fieldAddQueue = queue.Queue()
-        self.fieldRemoveQueue = queue.Queue()
-
-        # a dictionary, per field
-        # within it,
-        self.intersectionInfo = {}
-
-    def addField(self, f, name):
-        self.fieldAddQueue.put((f,name))
-
-    def removeField(self, name):
-        self.fieldRemoveQueue.put(name)
-
-    def run(self):
-        # Add and remove from queue
-        try:
-            while(True):
-                field, name = self.fieldAddQueue.get(False)
-                if name not in self.fields:
-                    self.fields[name] = field
-        except queue.Empty:
-            pass
-
-        try:
-            while(True):
-                name = self.fieldRemoveQueue.get(False)
-                self.fields.pop(name, None)
-        except queue.Empty:
-            pass
-
-        # now do the field stuff
-
-        '''
-
-
+        sphereList = []
+        allNew = o.getRadiatedValues()
+        for info in allNew:
+            if info is None or info[0] is None:
+                continue
+            freq, val = info[0]
+            data = info[1]
+            newSphere = FieldSphere(o.getPosition(), self.speed, freq, power, t, data)
+            sphereList.append(newSphere)
+        return sphereList
 
 
 

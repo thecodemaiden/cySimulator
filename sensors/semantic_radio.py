@@ -18,6 +18,7 @@ class SemanticRadio(FieldObject):
         self.outBuffer = []
         self.lastRssi = 0
         self.channel = int(params['channel'])
+        self.transFrequency = 2.4e9 + self.channel*1e6
         add = params.get('address')
         if add == None:
             # make up an address, hope it doesn't collide
@@ -40,23 +41,23 @@ class SemanticRadio(FieldObject):
 
     def writePacket(self, address, channel, message):
         pack = RadioPacket(address, channel, message)
-        self.outBuffer.append((self.tx_power, pack))
+        self.outBuffer.append(((self.transFrequency, self.tx_power), pack))
 
     def isAvailable(self):
         return len(self.inBuffer) > 0
 
     def readPacket(self, nBytes=-1):
-        if nBytes < 0 or nBytes > len(self.inBuffer):
-            nBytes = len(self.inBuffer)
-        output = self.inBuffer[-nBytes:]
-        self.inBuffer = self.inBuffer[:nBytes]
-        return output
+        #if nBytes < 0 or nBytes > len(self.inBuffer):
+        #    nBytes = len(self.inBuffer)
+        #output = self.inBuffer[-nBytes:]
+        #self.inBuffer = self.inBuffer[:nBytes]
+        return self.inBuffer.pop()
 
-    def getRadiatedValue(self):
+    def getRadiatedValues(self):
         if len(self.outBuffer) > 0:
             info = self.outBuffer.pop(0)
             return info
-        return None
+        return (None, None)
 
 
     def getPendingEmission(self):

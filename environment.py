@@ -49,7 +49,7 @@ class PhysicalEnvironment(object):
                 pass # maybe some things are pure computation?
         # then update the field... slowly
         oldTime = self.time
-        div = 10
+        div = 1
 
         for f in self.fieldList.values(): # TODO: make the fields into encapsualted 'physics objects'
             for i in range(div):
@@ -115,8 +115,8 @@ class SimulationManager(PhysicalEnvironment, ComputeEnvironment):
         self.time += self.dt
 
     def runloop(self):
-        timeout = 50.0
-        startTime = time()
+        timeout = 30.0
+        startTime = 0#time()
         if self.visualizer is not None:
             self.visualizer.startTime = time()
             #self.visualizer.canvas.mouse.getclick()
