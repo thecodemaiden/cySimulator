@@ -40,39 +40,34 @@ class FieldSphere(object):
         self.speed = speed
         self.isPlanar = False
         self.frequency = frequency
+        self.intensity_factor = 1.0
         self.onSurface = [0,0,0,0] # [a, b, c, d] for ax+by+cz = d
-        self.reflect_limits = [None, None] # xy angle, zy angle
+        self.reflect_limits = [[-np.inf, np.inf], [-np.inf, np.inf], [-np.inf, np.inf]] 
 
-    def reflectOffSurface(self, surfPos, surfSize):
+    def reflectOffSurface(self, surf_coord, surf_at):
         # first get the vector from our source to the surface
         # so we can reflect ourselves on the other side of that
-        dPos = [a-b for a,b in zip(surfPos, self.center)] #surf-self
+        test_limits = self.reflect_limits[surf_coord]
+ 
+        if surf_at < test_limits[0] or surf_at > test_limits[1]:
+            # we did
+            return None
+        # update the reflection limits
+        if surf_at < self.center[surf_coord]:
+            # we won't reflect anywhere < this
+            test_limits[0] = surf_at
+        elif surf_at > self.center[surf_coord]:
+            test_limits[1] = surf_at
+        else:
+            return None # no edge reflections for now
 
-        reflectPos = [a+b for a,b in zip(dPos, surfPos)]
-
-        newLimits = [a+b for a,b in zip(surfPos, surfSize)]+[a-b for a,b in zip(surfPos, surfSize)]
-
-        # really naive: waves don't exist above/below the surface (plane reflection...)
-        # determine the 'side' of the surface we are on, and don't spread back around the object
-        # ignore edges...
-        if dPos[0] > 0:
-            # surf_x > self_x, so 
-            self.reflect_limits[0] = -np.inf
-        if dPos[0] < 0:
-            self.reflect_limits[3] = np.inf
-            self.r
-        if dPos[1] > 0:
-            # surf_x > self_x, so 
-            self.reflect_limits[1] =- np.inf
-        if dPos[1] < 0:
-            self.reflect_limits[4] = -np.inf
-        if dPos[2] > 0:
-            # surf_x > self_x, so 
-            self.reflect_limits[2] = -np.inf
-        if dPos[2] < 0:
-            self.reflect_limits[2] = -np.inf
+        t = -self.center[surf_coord] + surf_at
+        reflectPos = list(self.center)
+        reflectPos[surf_coord] += 2*t
 
         reflected = FieldSphere(reflectPos, self.speed, self.frequency, self.totalPower, self.t1, self.data)
+        reflected.radius = self.radius
+        reflected.intensity = self.intensity
         reflected.reflect_limits = self.reflect_limits
 
         return reflected
@@ -106,6 +101,7 @@ class FieldSphere(object):
         newS.data = oldS.data
         if newS.radius > 0:
             newS.intensity = newS.totalPower/(newS.radius*newS.radius)
+            newS.intensity *= self.intensity_factor
 
         return newS
 
@@ -159,7 +155,8 @@ class Field(object):
         repeatInfo = it.repeat(objInfoTable)
         allSpheresList = self._sphereGenerator()
         together = it.izip(allSpheresList, repeatInfo)
-        allIntersections = self.sharedThreadPool.imap_unordered(self._intersectionThreaded, together, 8)
+        allIntersections = it.imap(self._intersectionThreaded, together)
+        #allIntersections = self.sharedThreadPool.imap_unordered(self._intersectionThreaded, together, 8)
         # now take the collisions and order them by object
         intersectionsByObject = defaultdict(list)
         for intersect in allIntersections:
@@ -174,11 +171,18 @@ class Field(object):
     def _obstacleThreaded(self, args):
         s = args[0]
         obs = args[1]
-        bouncy = None
+        bounceList = []
         # if the distance from us to the obstacle <= our radius, it intersects
         depth = obs.geom.pointDepth(s.center)
         if depth < 0 and -depth <= s.radius:
-             bouncy = s.reflectOffSurface(obs.centerPos, obs.dim)
+            faces = obs.faces
+            for face in faces:
+                bounceList.append(s.reflectOffSurface(*face))
+        bouncy = [i for i in bounceList if i is not None]
+        if len(bouncy) == 0:
+            bouncy = None
+        else: 
+            bouncy = bouncy[0]
         return bouncy
         
 
@@ -201,6 +205,7 @@ class Field(object):
             for s in sphereList:
                 s.prepareToDiscard(now)
         self.performIntersections(now)
+        #self.intersectObstacles(self.environment.obstacleList)
         for o in allObjects:
             toRemove = []
             for s in self.objects[o]:

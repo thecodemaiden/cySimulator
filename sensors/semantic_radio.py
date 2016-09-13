@@ -47,10 +47,6 @@ class SemanticRadio(FieldObject):
         return len(self.inBuffer) > 0
 
     def readPacket(self, nBytes=-1):
-        #if nBytes < 0 or nBytes > len(self.inBuffer):
-        #    nBytes = len(self.inBuffer)
-        #output = self.inBuffer[-nBytes:]
-        #self.inBuffer = self.inBuffer[:nBytes]
         return self.inBuffer.pop()
 
     def getRadiatedValues(self):

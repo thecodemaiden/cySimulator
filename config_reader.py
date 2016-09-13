@@ -122,7 +122,6 @@ class ConfigReader(object):
         fieldDescs = root.findall('field')
         for f in fieldDescs:
             name = f.attrib['name']
-            print cr._extractListStr(name)
             className = f.attrib['class']
             try:
                 fieldClass = getattr(field_types, className)

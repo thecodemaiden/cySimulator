@@ -29,6 +29,7 @@ class PhysicalEnvironment(object):
 
     def addField(self, fieldName, f):
         self.fieldList[fieldName] = f
+        f.environment = self
 
     def addFieldObject(self, fieldName, o):
         # TODO: error behavior

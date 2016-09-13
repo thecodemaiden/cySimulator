@@ -1,4 +1,5 @@
 from ode import GeomBox
+import numpy as np
 from object_types import PhysicalObject
 
 class Wall(PhysicalObject):
@@ -8,12 +9,56 @@ class Wall(PhysicalObject):
         ls = self.environment.lengthScale
         self.dim = tuple(s*ls for s in size)
         self.centerPos = tuple(c*ls for c in center_pos)
+        self.faces = {}
         self.color = (0.5, 0.5, 0)
         self.makePhysicsBody()
-        self.isReflective = True
+        self.faces = []
+        self.pts = []
+        self.calculateFaces()
+
+
+    def calculateFaces(self):
+        top_left_front = (self.centerPos[0] - self.dim[0]/2, self.centerPos[1] + self.dim[1]/2, self.centerPos[2]-self.dim[2]/2)
+        top_left_back = (self.centerPos[0] - self.dim[0]/2, self.centerPos[1] + self.dim[1]/2, self.centerPos[2]+self.dim[2]/2)
+        top_right_front = (self.centerPos[0] + self.dim[0]/2, self.centerPos[1] + self.dim[1]/2, self.centerPos[2]-self.dim[2]/2)
+        top_right_back = (self.centerPos[0] + self.dim[0]/2, self.centerPos[1] + self.dim[1]/2, self.centerPos[2]+self.dim[2]/2)
+
+        bottom_left_front = (self.centerPos[0] - self.dim[0]/2, self.centerPos[1] - self.dim[1]/2, self.centerPos[2]-self.dim[2]/2)
+        bottom_left_back = (self.centerPos[0] - self.dim[0]/2, self.centerPos[1] - self.dim[1]/2, self.centerPos[2]+self.dim[2]/2)
+        bottom_right_front = (self.centerPos[0] + self.dim[0]/2, self.centerPos[1] - self.dim[1]/2, self.centerPos[2]-self.dim[2]/2)
+        bottom_right_back = (self.centerPos[0] + self.dim[0]/2, self.centerPos[1] - self.dim[1]/2, self.centerPos[2]+self.dim[2]/2)
+
+        #[x,y,z]
+
+        self.pts = [ [ [], [] ], [ [], [] ] ]
+        self.pts[0][0].insert(0, bottom_left_front)
+        self.pts[0][0].insert(1, bottom_left_back)
+        self.pts[0][1].insert(0, top_left_front)
+        self.pts[0][1].insert(1, top_left_back)
+        self.pts[1][0].insert(0, bottom_right_front)
+        self.pts[1][0].insert(1, bottom_right_back)
+        self.pts[1][1].insert(0, top_right_front)
+        self.pts[1][1].insert(1, top_right_back)
+        self.pts = np.array(self.pts)
+        self.pts2 = np.square(self.pts)
+
+        self.faces.append((0, top_left_back[0]))
+        self.faces.append((0, top_right_back[0]))
+        self.faces.append((1, top_left_back[1]))
+        self.faces.append((1, bottom_left_back[1]))
+        self.faces.append((2, top_left_back[2]))
+        self.faces.append((2, top_left_front[2]))
+
+
+        #self.faces['top'] = [top_left_front, top_right_front, top_right_back, top_left_back]
+        #self.faces['bottom'] = [bottom_left_front, bottom_right_front, bottom_right_back, bottom_left_back]
+        #self.faces['left'] = [top_left_front, top_left_back, bottom_left_back, bottom_left_front]
+        #self.faces['right'] = [top_right_front, top_right_back, bottom_right_back, bottom_right_front]
+        #self.faces['front'] = [top_left_front, top_right_front, bottom_right_front, bottom_left_front]
+        #self.faces['back'] = [top_left_back, top_right_back, bottom_left_back, bottom_right_back]
 
     def __repr__(self):
-        return (self.dim, self.centerPos)
+        return str((self.dim, self.centerPos))
 
     def makePhysicsBody(self):
         """ There is no actual physics body, just an immovable collision object """
