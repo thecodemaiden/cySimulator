@@ -41,17 +41,27 @@ class FieldSphere(object):
         self.isPlanar = False
         self.frequency = frequency
         self.intensity_factor = 1.0
+        self.original = None
+        self.destroyFlag = False
+        self.phaseShift = 0
         self.onSurface = [0,0,0,0] # [a, b, c, d] for ax+by+cz = d
         self.reflect_limits = [[-np.inf, np.inf], [-np.inf, np.inf], [-np.inf, np.inf]] 
+
 
     def reflectOffSurface(self, surf_coord, surf_at):
         # first get the vector from our source to the surface
         # so we can reflect ourselves on the other side of that
         test_limits = self.reflect_limits[surf_coord]
  
+        # first check that depth <0, so we need to reflect:
+        t = -self.center[surf_coord] + surf_at
+        if t>0 or -t>self.radius:
+            return None
+
         if surf_at < test_limits[0] or surf_at > test_limits[1]:
             # we did
             return None
+
         # update the reflection limits
         if surf_at < self.center[surf_coord]:
             # we won't reflect anywhere < this
@@ -61,13 +71,17 @@ class FieldSphere(object):
         else:
             return None # no edge reflections for now
 
-        t = -self.center[surf_coord] + surf_at
         reflectPos = list(self.center)
         reflectPos[surf_coord] += 2*t
+
+        dt = t/self.frequency
 
         reflected = FieldSphere(reflectPos, self.speed, self.frequency, self.totalPower, self.t1, self.data)
         reflected.radius = self.radius
         reflected.intensity = self.intensity
+        reflected.intensity_factor = 0.5
+        reflected.original = self
+        reflected.phaseShift = np.pi
         reflected.reflect_limits = self.reflect_limits
 
         return reflected
@@ -78,6 +92,8 @@ class FieldSphere(object):
        
         if self.radius > 0:
             self.intensity = self.totalPower/(self.radius*self.radius)
+            self.intensity *= self.intensity_factor
+
 
     def calculate(self, obj, obj_pos, obj_pos_sq):
         x1, y1, z1 = self.center
@@ -99,9 +115,10 @@ class FieldSphere(object):
         newS =  cls(oldS.center, oldS.speed, oldS.frequency, oldS.totalPower, oldS.t1)
         newS.radius = speed*(t-oldS.t1)
         newS.data = oldS.data
+        newS.original = oldS.original
         if newS.radius > 0:
             newS.intensity = newS.totalPower/(newS.radius*newS.radius)
-            newS.intensity *= self.intensity_factor
+            newS.intensity *= oldS.intensity_factor
 
         return newS
 
@@ -138,12 +155,14 @@ class Field(object):
                     properCopy = FieldSphere.copyAtT(s, s.t1+dt, self.speed)
                     intersectInfo[o] = properCopy
         return intersectInfo
-                
 
     def performIntersections(self, t):
         '''We need to go through all spheres and find intersections between objects and spheres with radius>0'''
         # assumes waaay more spheres than objects
         # TODO: octree or other representation to limit comparisons
+
+        extraSpheres = self.intersectObstacles(self.environment.obstacleList)
+
 
         # precalculate obj. info
         objInfoTable = {}
@@ -153,7 +172,8 @@ class Field(object):
             objInfoTable[o] = (pos, pos2)
 
         repeatInfo = it.repeat(objInfoTable)
-        allSpheresList = self._sphereGenerator()
+        origSpheresList = self._sphereGenerator()
+        allSpheresList = it.chain(origSpheresList, extraSpheres)
         together = it.izip(allSpheresList, repeatInfo)
         allIntersections = it.imap(self._intersectionThreaded, together)
         #allIntersections = self.sharedThreadPool.imap_unordered(self._intersectionThreaded, together, 8)
@@ -173,24 +193,16 @@ class Field(object):
         obs = args[1]
         bounceList = []
         # if the distance from us to the obstacle <= our radius, it intersects
-        depth = obs.geom.pointDepth(s.center)
-        if depth < 0 and -depth <= s.radius:
-            faces = obs.faces
-            for face in faces:
-                bounceList.append(s.reflectOffSurface(*face))
+        for face in obs.faces:
+            bounceList.append(s.reflectOffSurface(*face))
         bouncy = [i for i in bounceList if i is not None]
-        if len(bouncy) == 0:
-            bouncy = None
-        else: 
-            bouncy = bouncy[0]
         return bouncy
         
 
     def intersectObstacles(self, obsList):
-        allSpheresList = self._sphereGenerator()
-        for obs in obsList:
-            rep = it.repeat(obs)
-            newSpheres = self.sharedThreadPool.map(self._obstacleThreaded, it.izip(allSpheresList, rep))              
+        allCombo = it.product(self._sphereGenerator(), obsList)
+        reflections = self.sharedThreadPool.map(self._obstacleThreaded, allCombo)   
+        return it.chain.from_iterable(reflections)
 
              
     def update(self, now):
@@ -205,12 +217,16 @@ class Field(object):
             for s in sphereList:
                 s.prepareToDiscard(now)
         self.performIntersections(now)
-        #self.intersectObstacles(self.environment.obstacleList)
+        allObjects = self.objects.iterkeys()
         for o in allObjects:
             toRemove = []
-            for s in self.objects[o]:
+            sphereList = self.objects[o]
+            for s in sphereList:
                 if s.intensity is not None and s.intensity < self.minI:
+                    if s.destroyFlag:
                         toRemove.append(s)
+                    else:
+                        s.destroyFlag = True
             newList = [s for s in sphereList if s not in toRemove]
             self.objects[o] = newList
 
@@ -243,8 +259,10 @@ class SemanticField(Field):
         if len(sphereList) == 1:
             return sphereList[0]
 
-        intensities, phases = zip(*[(s.intensity, (2*np.pi*s.radius*s.frequency)) for s in sphereList])
-        polard = np.dot(intensities, np.exp(1j*np.array(phases)))
+        reflections = [s for s in sphereList if s.original is not None]
+        intensities, phases = zip(*[(s.intensity, (2*np.pi*s.radius*s.frequency + s.phaseShift)) for s in sphereList])
+        polard = np.multiply(intensities, np.exp(1j*np.array(phases)))
+
         strongest = intensities.index(max(intensities))
         polar_sum = np.sum(polard)
         newIntensity = np.abs(polar_sum)

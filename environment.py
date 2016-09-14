@@ -50,7 +50,7 @@ class PhysicalEnvironment(object):
                 pass # maybe some things are pure computation?
         # then update the field... slowly
         oldTime = self.time
-        div = 1
+        div = 10
 
         for f in self.fieldList.values(): # TODO: make the fields into encapsualted 'physics objects'
             for i in range(div):

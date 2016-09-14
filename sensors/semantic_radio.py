@@ -51,8 +51,9 @@ class SemanticRadio(FieldObject):
 
     def getRadiatedValues(self):
         if len(self.outBuffer) > 0:
-            info = self.outBuffer.pop(0)
-            return [info]
+            allPackets = self.outBuffer[:] # TODO: use tx time to limit this
+            self.outBuffer = []
+            return allPackets
         return [(None, None)]
 
 
