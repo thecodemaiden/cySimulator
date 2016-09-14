@@ -7,6 +7,34 @@ import numpy as np
 
 from time import time
 
+class FieldVisualiser(object):
+    import visual as v
+    def __init__(self):
+        self.visualWindow = None
+        self.spheres = []
+        self.colorList = [(255,255,0), (0,0,255),  (0,255,255), (0,255,0),(255,0,255), (255,0,0), ]
+        
+    def drawFieldState(self, field):
+        if self.visualWindow is None:
+            self.visualWindow = self.v.display(title='Field visualization', width=1024, height=768)
+            #self.visualWindow.autocenter=False
+            #self.visualWindow.scale = (0.05,0.05,0.05)
+        self.visualWindow.select()
+        for s in self.spheres:
+            s.visible = False
+        self.spheres = []
+        i = 0
+        for sphereList in [field.objects.values()[2]]:
+            color = self.colorList[i]
+            i += 1
+            if i == len(self.colorList):
+                i = 0
+            for s in sphereList:
+                sphere = self.v.sphere(pos=s.center, radius=s.radius/1000, color=color, opacity=0.2)
+                self.spheres.append(sphere)
+        
+
+
 class PhysicalEnvironment(object):
     def __init__(self):
         super(PhysicalEnvironment, self).__init__()
@@ -50,7 +78,7 @@ class PhysicalEnvironment(object):
                 pass # maybe some things are pure computation?
         # then update the field... slowly
         oldTime = self.time
-        div = 10
+        div = 1
 
         for f in self.fieldList.values(): # TODO: make the fields into encapsualted 'physics objects'
             for i in range(div):

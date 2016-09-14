@@ -39,9 +39,9 @@ class SemanticRadio(FieldObject):
                 self.lastRssi = 10*numpy.log10(1000*intensity)
 
 
-    def writePacket(self, address, channel, message):
+    def writePacket(self, t, address, channel, message):
         pack = RadioPacket(address, channel, message)
-        self.outBuffer.append(((self.transFrequency, self.tx_power), pack))
+        self.outBuffer.append(((self.transFrequency, self.tx_power, t), pack))
 
     def isAvailable(self):
         return len(self.inBuffer) > 0
@@ -51,9 +51,9 @@ class SemanticRadio(FieldObject):
 
     def getRadiatedValues(self):
         if len(self.outBuffer) > 0:
-            allPackets = self.outBuffer[:] # TODO: use tx time to limit this
-            self.outBuffer = []
-            return allPackets
+            outPackets = [p for p in self.outBuffer if self.device.environment.time >= p[0][2]]
+            self.outBuffer = [p for p in self.outBuffer if p not in outPackets]
+            return outPackets
         return [(None, None)]
 
 

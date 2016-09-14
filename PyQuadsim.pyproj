@@ -79,9 +79,6 @@
     <Compile Include="programs\__init__.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="rf_fields.py">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="sensors\accelerometer.py" />
     <Compile Include="sensors\gyroscope.py">
       <SubType>Code</SubType>

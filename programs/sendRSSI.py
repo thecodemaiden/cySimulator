@@ -13,7 +13,8 @@ class SendRssi(DeviceTask):
         return 0
 
     def loop(self):
-        dt = self.environment.time - self.lastTime
+        now = self.environment.time
+        dt = now - self.lastTime
         # send a message to radio a1b2c3d4e5
         if self.hasRadio:
             # TODO: 'send' RSSI to RPi
@@ -25,7 +26,7 @@ class SendRssi(DeviceTask):
                 if self.radio.isAvailable():
                     p = self.radio.readPacket()
                     # hardcoded RPi address
-                    self.radio.writePacket(0xe7e7e7e7e1, channel, 0xf3) # todo, rssi value
+                    self.radio.writePacket(now, 0xe7e7e7e7e1, channel, 0xf3) # todo, rssi value
         return 10
 
 taskClass = SendRssi

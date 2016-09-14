@@ -13,12 +13,15 @@ class RequestRssi(DeviceTask):
         return 0
 
     def loop(self):
-        dt = self.environment.time - self.lastTime
+        now = self.environment.time
+        dt = now - self.lastTime
         if self.hasRadio:
             # send the packets to the quads
             if dt >= 0.5:
+                sendTime = now
                 for add in self.quadAddresses:
-                    self.radio.writePacket(add, self.radio.channel, 0xff)
+                    self.radio.writePacket(sendTime, add, self.radio.channel, 0xff)
+                    sendTime += 0.05
                 self.lastTime = dt
         return 10
 
