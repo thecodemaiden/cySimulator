@@ -19,14 +19,12 @@ class SendRssi(DeviceTask):
         if self.hasRadio:
             # TODO: 'send' RSSI to RPi
             channel = self.radio.channel
-            if dt >= 0.5:
+            if self.radio.isAvailable():
                 self.device.logger.info('[{}] RSSI: {}'.format(self.device.name, self.radio.lastRssi))
-                self.lastTime = dt
-                # ack any available packets
-                if self.radio.isAvailable():
-                    p = self.radio.readPacket()
-                    # hardcoded RPi address
-                    self.radio.writePacket(now, 0xe7e7e7e7e1, channel, 0xf3) # todo, rssi value
+
+                p = self.radio.readPacket()
+                # hardcoded RPi address
+                self.radio.writePacket(now, 0xe7e7e7e7e1, channel, 0xf3) # todo, rssi value
         return 10
 
 taskClass = SendRssi

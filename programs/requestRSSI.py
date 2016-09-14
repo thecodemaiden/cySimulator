@@ -17,7 +17,7 @@ class RequestRssi(DeviceTask):
         dt = now - self.lastTime
         if self.hasRadio:
             # send the packets to the quads
-            if dt >= 0.5:
+            if dt >= 0.1:
                 sendTime = now
                 for add in self.quadAddresses:
                     self.radio.writePacket(sendTime, add, self.radio.channel, 0xff)
