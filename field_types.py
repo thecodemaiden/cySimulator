@@ -54,12 +54,17 @@ class FieldSphere(object):
         # so we can reflect ourselves on the other side of that
         test_limits = self.reflect_limits[surf_coord]
  
-        # first check that depth <0, so we need to reflect:
+        # first check if we need to reflect:
         t = -self.center[surf_coord] + surf_at
-        if t>0 or -t>self.radius:
-            return None
 
-        if surf_at < test_limits[0] or surf_at > test_limits[1]:
+        if self.center[surf_coord] < surf_at:
+            if t<0 or t>self.radius:
+                return None
+        else:
+            if t>0 or -t>self.radius:
+                return None
+
+        if surf_at <= test_limits[0] or surf_at >= test_limits[1]:
             # we did
             return None
 
@@ -116,6 +121,7 @@ class FieldSphere(object):
     def copyAtT(cls, oldS, t, speed):
         newS =  cls(oldS.center, oldS.speed, oldS.frequency, oldS.totalPower, oldS.t1)
         newS.radius = speed*(t-oldS.t1)
+        newS.phaseShift = oldS.phaseShift
         newS.data = oldS.data
         newS.original = oldS.original
         if newS.radius > 0:
@@ -127,11 +133,12 @@ class FieldSphere(object):
 
 class Field(object):
     sharedThreadPool = ThreadPool(4) 
-    def __init__(self, propSpeed, minI=1e-10):
+    def __init__(self, propSpeed, minI=1e-10, planeEquation=None):
         # TODO: replace with sphereList, mapping sphere to producing object
         self.objects = {}
         self.speed = float(propSpeed)
         self.minI = minI
+        self.planeEq = planeEquation
 
     def addObject(self, o):
         self.objects[o] = []
@@ -204,7 +211,8 @@ class Field(object):
 
     def intersectObstacles(self, obsList):
         allCombo = it.product(self._sphereGenerator(), obsList)
-        reflections = self.sharedThreadPool.map(self._obstacleThreaded, allCombo)   
+        reflections = it.imap(self._obstacleThreaded, allCombo)
+        #reflections = self.sharedThreadPool.map(self._obstacleThreaded, allCombo)   
         return it.chain.from_iterable(reflections)
 
              
@@ -259,13 +267,11 @@ class SemanticField(Field):
         self.minI = float(minIntensity)
 
     def combineValues(self, sphereList):
-        if len(sphereList) == 1:
-            return sphereList[0]
 
         intensities, phases = zip(*[(s.intensity, (2*np.pi*s.radius*s.frequency + s.phaseShift)) for s in sphereList])
         polard = np.multiply(intensities, np.exp(1j*np.array(phases)))
 
-        probs = np.abs(polard)
+        probs = np.abs(np.real(polard))
         probs = probs/np.sum(probs)
         selector = 0
 
@@ -277,9 +283,9 @@ class SemanticField(Field):
 
         chosen = sphereList[i]
 
-        strongest = intensities.index(max(intensities))
+        strongest = sphereList[intensities.index(max(intensities))]
         polar_sum = np.sum(polard)
-        newIntensity = np.abs(polar_sum)
+        newIntensity = np.abs(np.real(polar_sum))
 
         newSphere = FieldSphere((0,0,0), 0, 0, 0, 0, chosen.data)
         newSphere.intensity = newIntensity

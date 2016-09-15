@@ -46,13 +46,14 @@ class ConfigReader(object):
                 walls = child.findall('wall')
                 for w in walls:
                     wallName = w.attrib['name']
+                    isObstacle = w.attrib.get('isObstacle', False)
                     c = w.find('center')
                     pos = self._extractListStr(c.text)
                     pos = [float(p) for p in pos]
                     s = w.find('size')
                     size = self._extractListStr(s.text)
                     size = [float(p) for p in size]
-                    wallList[wallName] = Wall(size, pos, self.environment)
+                    wallList[wallName] = Wall(size, pos, self.environment, isObstacle)
 
                 doors = child.findall('door')
                 for d in doors:
@@ -115,7 +116,7 @@ class ConfigReader(object):
             hndlr.setFormatter(logging.Formatter(fmt='%(name)s[%(levelname)s]: %(message)s'))
             logger.addHandler(hndlr)
 
-        sim = SimulationManager(1.0/30)
+        sim = SimulationManager(0.001)
         cr = ConfigReader(sim) # TODO: these should all be class methods...?
         
         # create the fields

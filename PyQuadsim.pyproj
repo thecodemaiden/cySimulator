@@ -37,6 +37,9 @@
     <Compile Include="heatmap.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="programs\basicTx.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="programs\device_task.py">
       <SubType>Code</SubType>
     </Compile>
@@ -120,7 +123,9 @@
     <Content Include="bodies\raspberry_pi.xml" />
     <Content Include="layout\example_layout.xml" />
     <Content Include="layout\porter_hall.xml" />
+    <Content Include="layout\small_room.xml" />
     <Content Include="porter_hall_sim.xml" />
+    <Content Include="simple_setup.xml" />
     <Content Include="sim_setup.xml" />
   </ItemGroup>
   <Import Project="$(PtvsTargetsFile)" Condition="Exists($(PtvsTargetsFile))" />

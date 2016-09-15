@@ -4,12 +4,12 @@ from object_types import PhysicalObject
 
 class Wall(PhysicalObject):
     """A wall in the environment, which may contain rectangular holes"""
-    def __init__(self, size, center_pos,  environment):
+    def __init__(self, size, center_pos,  environment, allSides=False):
         super(Wall, self).__init__(environment)
         ls = self.environment.lengthScale
         self.dim = tuple(s*ls for s in size)
         self.centerPos = tuple(c*ls for c in center_pos)
-        self.faces = {}
+        self.isPlane = not allSides
         self.color = (0.5, 0.5, 0)
         self.makePhysicsBody()
         self.faces = []
@@ -18,44 +18,16 @@ class Wall(PhysicalObject):
 
 
     def calculateFaces(self):
-        top_left_front = (self.centerPos[0] - self.dim[0]/2, self.centerPos[1] + self.dim[1]/2, self.centerPos[2]-self.dim[2]/2)
-        top_left_back = (self.centerPos[0] - self.dim[0]/2, self.centerPos[1] + self.dim[1]/2, self.centerPos[2]+self.dim[2]/2)
-        top_right_front = (self.centerPos[0] + self.dim[0]/2, self.centerPos[1] + self.dim[1]/2, self.centerPos[2]-self.dim[2]/2)
-        top_right_back = (self.centerPos[0] + self.dim[0]/2, self.centerPos[1] + self.dim[1]/2, self.centerPos[2]+self.dim[2]/2)
-
-        bottom_left_front = (self.centerPos[0] - self.dim[0]/2, self.centerPos[1] - self.dim[1]/2, self.centerPos[2]-self.dim[2]/2)
-        bottom_left_back = (self.centerPos[0] - self.dim[0]/2, self.centerPos[1] - self.dim[1]/2, self.centerPos[2]+self.dim[2]/2)
-        bottom_right_front = (self.centerPos[0] + self.dim[0]/2, self.centerPos[1] - self.dim[1]/2, self.centerPos[2]-self.dim[2]/2)
-        bottom_right_back = (self.centerPos[0] + self.dim[0]/2, self.centerPos[1] - self.dim[1]/2, self.centerPos[2]+self.dim[2]/2)
-
-        #[x,y,z]
-
-        self.pts = [ [ [], [] ], [ [], [] ] ]
-        self.pts[0][0].insert(0, bottom_left_front)
-        self.pts[0][0].insert(1, bottom_left_back)
-        self.pts[0][1].insert(0, top_left_front)
-        self.pts[0][1].insert(1, top_left_back)
-        self.pts[1][0].insert(0, bottom_right_front)
-        self.pts[1][0].insert(1, bottom_right_back)
-        self.pts[1][1].insert(0, top_right_front)
-        self.pts[1][1].insert(1, top_right_back)
-        self.pts = np.array(self.pts)
-        self.pts2 = np.square(self.pts)
-
-        self.faces.append((0, top_left_back[0]))
-        self.faces.append((0, top_right_back[0]))
-        self.faces.append((1, top_left_back[1]))
-        self.faces.append((1, bottom_left_back[1]))
-        self.faces.append((2, top_left_back[2]))
-        self.faces.append((2, top_left_front[2]))
-
-
-        #self.faces['top'] = [top_left_front, top_right_front, top_right_back, top_left_back]
-        #self.faces['bottom'] = [bottom_left_front, bottom_right_front, bottom_right_back, bottom_left_back]
-        #self.faces['left'] = [top_left_front, top_left_back, bottom_left_back, bottom_left_front]
-        #self.faces['right'] = [top_right_front, top_right_back, bottom_right_back, bottom_right_front]
-        #self.faces['front'] = [top_left_front, top_right_front, bottom_right_front, bottom_left_front]
-        #self.faces['back'] = [top_left_back, top_right_back, bottom_left_back, bottom_right_back]
+        if self.isPlane:
+            alignedIn = self.dim.index(min(self.dim))
+            self.faces = [(alignedIn, self.centerPos[alignedIn])]
+        else:
+            self.faces.append((0, self.centerPos[0] - self.dim[0]/2))
+            self.faces.append((0, self.centerPos[0] + self.dim[0]/2))
+            self.faces.append((1, self.centerPos[1] + self.dim[1]/2))
+            self.faces.append((1, self.centerPos[1] - self.dim[1]/2))
+            self.faces.append((2, self.centerPos[2]+self.dim[2]/2))
+            self.faces.append((2, self.centerPos[2]-self.dim[2]/2))
 
     def __repr__(self):
         return str((self.dim, self.centerPos))

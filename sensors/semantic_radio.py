@@ -12,8 +12,8 @@ class SemanticRadio(FieldObject):
     """ A 'radio wave' representation where symbols are associated with wavefronts"""
     def __init__(self, entity, params):
         self.device = entity
-        self.rx_sensitivity = float(params.get('rx_sens', 1e-10)) # in W
-        self.tx_power = float(params.get('tx_pow', 0.01))
+        self.rx_sensitivity = float(params.get('rx_sens', 2.5e-13)) # in W, for nrf51
+        self.tx_power = float(params.get('tx_pow', 0.0001)) # nrf51
         self.inBuffer = [] # list of RadioPackets
         self.outBuffer = []
         self.lastRssi = 0
@@ -36,7 +36,8 @@ class SemanticRadio(FieldObject):
             # TODO: multiple addresses + channels possible!
             if packet.address == self.address and packet.channel == self.channel:
                 self.inBuffer.append(packet.message) # TODO: timestamp? 
-                self.lastRssi = 10*numpy.log10(1000*intensity)
+                newRssi = 10*numpy.log10(1000*intensity)
+                self.lastRssi = newRssi
 
 
     def writePacket(self, t, address, channel, message):

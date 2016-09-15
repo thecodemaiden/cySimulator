@@ -10,9 +10,9 @@ class Raspberry_Pi(Device):
 
         mainBody = ode.Body(physicsWorld)
         bodyMass = ode.Mass()
-        totalMass = 0.1
+        totalMass = 0.075
 
-        dims =  (0.2, 0.05, 0.1)
+        dims =  (0.05, 0.02, 0.03)
 
         bodyMass.setBoxTotal(totalMass, *dims)
 

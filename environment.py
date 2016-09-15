@@ -144,7 +144,7 @@ class SimulationManager(PhysicalEnvironment, ComputeEnvironment):
         self.time += self.dt
 
     def runloop(self):
-        timeout = 30.0
+        timeout = 60.0
         startTime = 0#time()
         if self.visualizer is not None:
             self.visualizer.startTime = time()
