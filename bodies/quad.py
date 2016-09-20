@@ -108,6 +108,9 @@ class Quadcopter(Device):
                 self.armLength * self.propellerThrustCoefficient * (self.motorW[1] - self.motorW[3])] 
 
     def pidOutputToMotors(self, err, total):
+        motorVals = [0,0,0,0]
+        if total == 0:
+            return motorVals
         # shamelessly ripped from MATLAB code
         inertia = self.physicsBody.getMass().I
         e1 = err[0]; e2 = err[1]; e3 = err[2]; 
@@ -123,7 +126,6 @@ class Quadcopter(Device):
         if each < 0:
             each = 0
    
-        motorVals = [0,0,0,0]
         motorVals[0] = each -(-2 * b * e1 * Ix + e3 * Iz * k * L)/(4 * b * k * L);
         motorVals[1] = each + e3 * Iz/(4 * b) + (e2 * Iy)/(2 * k * L);
         motorVals[2] = each -(2 * b * e1 * Ix + e3 * Iz * k * L)/(4 * b * k * L);

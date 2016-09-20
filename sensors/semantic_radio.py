@@ -12,13 +12,14 @@ class SemanticRadio(FieldObject):
     """ A 'radio wave' representation where symbols are associated with wavefronts"""
     def __init__(self, entity, params):
         self.device = entity
+        self.transFrequency = float(params.get('frequency', 2.4e9))
         self.rx_sensitivity = float(params.get('rx_sens', 2.5e-13)) # in W, for nrf51
         self.tx_power = float(params.get('tx_pow', 0.0001)) # nrf51
         self.inBuffer = [] # list of RadioPackets
         self.outBuffer = []
         self.lastRssi = 0
         self.channel = int(params['channel'])
-        self.transFrequency = 2.4e9 + self.channel*1e6
+        self.transFrequency += self.channel*1e6
         add = params.get('address')
         if add == None:
             # make up an address, hope it doesn't collide

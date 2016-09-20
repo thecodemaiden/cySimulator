@@ -43,7 +43,7 @@ class Wall(PhysicalObject):
     def onVisualizationStart(self):
         g = self.environment.visualizer.getGraphics(self.geom)
         g.color = self.color
-        g.opacity = 0.1
+        g.opacity = 0.2
     
     @classmethod
     def cutHoleInWall(cls, wall, hole_size, hole_center):

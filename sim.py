@@ -8,7 +8,7 @@ logger = logging.getLogger("Quadsim")
 logger.setLevel(logging.INFO)
 
 
-def runSimulationFile(filename, withViz):
+def runSimulationFile(filename, withViz, timeout=None):
     sim = ConfigReader.readSimulationFile(filename)
     if withViz:
         sim.setVisualizer(Vpy_Visualization)
@@ -20,7 +20,7 @@ def runSimulationFile(filename, withViz):
     print('Simulation start')
 
     start = time()
-    sim.runloop()
+    sim.runloop(timeout)
     realTime = time()-start
     simTime = sim.time
 
@@ -43,7 +43,7 @@ if __name__ == '__main__':
     #for n in ['sim100_radio.xml']:
     #    print("\t--- {} ---\t". format(n))
     #    benchmarkFile('profile_setup/'+n)
-    runSimulationFile('simple_setup.xml', True)
+    runSimulationFile('mostafa_exp.xml', True, None)
     #import visual as v
     #v.rate(1)
    # v.exit()

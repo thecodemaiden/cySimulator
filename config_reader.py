@@ -46,14 +46,13 @@ class ConfigReader(object):
                 walls = child.findall('wall')
                 for w in walls:
                     wallName = w.attrib['name']
-                    isObstacle = w.attrib.get('isObstacle', False)
                     c = w.find('center')
                     pos = self._extractListStr(c.text)
                     pos = [float(p) for p in pos]
                     s = w.find('size')
                     size = self._extractListStr(s.text)
                     size = [float(p) for p in size]
-                    wallList[wallName] = Wall(size, pos, self.environment, isObstacle)
+                    wallList[wallName] = Wall(size, pos, self.environment, False)
 
                 doors = child.findall('door')
                 for d in doors:
@@ -65,6 +64,17 @@ class ConfigReader(object):
                     size = self._extractListStr(s.text)
                     size = self._mixedToFloats(size)
                     doorList[wallName] = (pos, size)
+
+                obstacles = child.findall('obstacle')
+                for o in obstacles:
+                    wallName = o.attrib['name']
+                    c = o.find('center')
+                    pos = self._extractListStr(c.text)
+                    pos = [float(p) for p in pos]
+                    s = o.find('size')
+                    size = self._extractListStr(s.text)
+                    size = [float(p) for p in size]
+                    wallList[wallName] = Wall(size, pos, self.environment, True)
 
         holeWalls = []
 
@@ -79,6 +89,8 @@ class ConfigReader(object):
         return holeWalls
 
     def loadDeviceTask(self, className):
+        if className is None:
+            return None
         try:
             taskClass = getattr(programs, className)
         except AttributeError:
@@ -116,7 +128,7 @@ class ConfigReader(object):
             hndlr.setFormatter(logging.Formatter(fmt='%(name)s[%(levelname)s]: %(message)s'))
             logger.addHandler(hndlr)
 
-        sim = SimulationManager(0.001)
+        sim = SimulationManager(1.0/20)
         cr = ConfigReader(sim) # TODO: these should all be class methods...?
         
         # create the fields
@@ -202,7 +214,8 @@ class ConfigReader(object):
                 else:
                     x,y,z = position
                 deviceBody.setPosition((x,y,z))
-                deviceBody.deviceTask = taskClass(deviceBody)
+                if taskClass is not None:
+                    deviceBody.deviceTask = taskClass(deviceBody)
 
         return sim
 

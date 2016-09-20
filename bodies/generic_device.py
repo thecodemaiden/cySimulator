@@ -1,8 +1,8 @@
 import ode
 from object_types import Device
 
-class Raspberry_Pi(Device):
-    """A model of a Raspberry Pi computer - a very plain device spec"""
+class GenericDevice(Device):
+    """A box-shaped device"""
 
     def makePhysicsBody(self):
         physicsWorld = self.environment.world
@@ -12,11 +12,10 @@ class Raspberry_Pi(Device):
         bodyMass = ode.Mass()
         totalMass = 0.075
 
-        dims =  (0.05, 0.02, 0.03)
 
-        bodyMass.setBoxTotal(totalMass, *dims)
+        bodyMass.setBoxTotal(totalMass, *self.dims)
 
-        geom = ode.GeomBox(space, dims)
+        geom = ode.GeomBox(space, self.dims)
         geom.setCategoryBits(1)
         geom.setCollideBits(1)
 
@@ -28,5 +27,7 @@ class Raspberry_Pi(Device):
 
     def applyParameters(self, params):
         # no parameters needed... maybe in future clock speed, memory, etc
-        pass
+        dims = params['size']
+        dims = [float(c) for c in dims.split(',')]
+        self.dims = dims
 

@@ -36,14 +36,14 @@ class FieldVisualiser(object):
 
 
 class PhysicalEnvironment(object):
-    def __init__(self):
-        super(PhysicalEnvironment, self).__init__()
+    def __init__(self, dt):
         self.world = ode.World()
         self.space = ode.HashSpace()
         self.lengthScale = 1.0 
         self.massScale = 1.0 
         self.forceScale = self.massScale*self.lengthScale
         self.fieldList = {}
+        self.dt = dt
 
         self.world.setGravity((0,-9.81*self.forceScale,0))
         self.world.setCFM(1e-5)
@@ -70,24 +70,32 @@ class PhysicalEnvironment(object):
         # assumes body is already in our world, and collision geoms are in our space
         self.objectList.append(obj)
 
-    def updatePhysics(self, dt):
-        for o in self.objectList:
-            try:
-                o.updatePhysics(dt)
-            except AttributeError:
-                pass # maybe some things are pure computation?
-        # then update the field... slowly
+    def updatePhysics(self, crude_dt):
+        #update the field... slowly
+        if crude_dt < self.dt:
+            crude_dt = self.dt
+
+        nSteps = int(np.ceil(crude_dt/self.dt))
+        crude_dt = self.dt*nSteps
+
         oldTime = self.time
         div = 1
-
         for f in self.fieldList.values(): # TODO: make the fields into encapsualted 'physics objects'
             for i in range(div):
-                oldTime += dt/div
+                oldTime += crude_dt/div
                 f.update(oldTime)
+
+        for i in range(nSteps):
+            for o in self.objectList:
+                try:
+                    pass
+                    o.updatePhysics(self.dt)
+                except AttributeError:
+                    pass # maybe some things are pure computation?
  
-        self.space.collide(None, self.near_callback)
-        self.world.quickStep(dt)
-        self.contactGroup.empty()
+            self.space.collide(None, self.near_callback)
+            self.world.quickStep(self.dt)
+            self.contactGroup.empty()
 
     def near_callback(self, args, geom1, geom2):
         # Check if the objects do collide
@@ -101,10 +109,10 @@ class PhysicalEnvironment(object):
             j.attach(geom1.getBody(), geom2.getBody())
 
 class ComputeEnvironment(object):
-    def __init__(self):
-        super(ComputeEnvironment, self).__init__()
+    def __init__(self, dt):
         self.objectList = []
         self.time = 0
+        self.dt = dt
 
     def updateComputation(self, dt):
         for o in self.objectList:
@@ -121,7 +129,7 @@ class ComputeEnvironment(object):
 class SimulationManager(PhysicalEnvironment, ComputeEnvironment):
     """ Contains the physical + computational simulation loops, and any visualization"""
     def __init__(self, dt):
-        super(SimulationManager, self).__init__()
+        super(SimulationManager, self).__init__(dt)
         self.draw = True
         self.visualizer = None
         self.dt = dt;
@@ -138,13 +146,12 @@ class SimulationManager(PhysicalEnvironment, ComputeEnvironment):
                 o.onVisualizationStart()
         self.time = 0
 
-    def update(self):
-        self.updateComputation(self.dt)
-        self.updatePhysics(self.dt)
-        self.time += self.dt
+    def update(self, dt):
+        self.updateComputation(dt)
+        self.updatePhysics(dt)
+        self.time += dt
 
-    def runloop(self):
-        timeout = 60.0
+    def runloop(self, timeout):
         startTime = 0#time()
         if self.visualizer is not None:
             self.visualizer.startTime = time()
@@ -155,7 +162,7 @@ class SimulationManager(PhysicalEnvironment, ComputeEnvironment):
             # TODO:  put keyboard input on separate thread...
         try:
             while True:
-                self.update()
+                self.update(1.0/30)
                 if self.visualizer is not None:
                     self.visualizer.update(self.dt)
                 else:
@@ -166,7 +173,7 @@ class SimulationManager(PhysicalEnvironment, ComputeEnvironment):
                         elif chr == 't':
                             print self.time
                 #if time()-startTime >= timeout:
-                if self.time-startTime >= timeout:
+                if timeout is not None and self.time-startTime >= timeout:
                     break
               
         except KeyboardInterrupt:

@@ -7,10 +7,11 @@ class Radio(FieldObject):
     def __init__(self, entity, params):
         self.device = entity
 
+        self.transFrequency = float(params.get('frequency', 2.4e9))
         self.rx_sensitivity = float(params.get('rx_sens', 1e-10)) # in W
         self.tx_power = float(params.get('tx_pow', 0.01))
         self.channel = int(params['channel'])
-        self.transFrequency = 2.4e9 + self.channel*1e6
+        self.transFrequency += self.channel*1e6
         add = params.get('address')
         if add == None:
             # make up an address, hope it doesn't collide

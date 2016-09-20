@@ -24,8 +24,11 @@
     <PtvsTargetsFile>$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets</PtvsTargetsFile>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="bodies\fake_stepper.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="bodies\quad.py" />
-    <Compile Include="bodies\raspberry_pi.py">
+    <Compile Include="bodies\generic_device.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="bodies\__init__.py">
@@ -83,6 +86,9 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="sensors\accelerometer.py" />
+    <Compile Include="sensors\geophone.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="sensors\gyroscope.py">
       <SubType>Code</SubType>
     </Compile>
@@ -119,11 +125,13 @@
     <Folder Include="vpyViz\" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="bodies\fake_stepper.xml" />
     <Content Include="bodies\quadcopter.xml" />
-    <Content Include="bodies\raspberry_pi.xml" />
+    <Content Include="bodies\generic_device.xml" />
     <Content Include="layout\example_layout.xml" />
     <Content Include="layout\porter_hall.xml" />
     <Content Include="layout\small_room.xml" />
+    <Content Include="mostafa_exp.xml" />
     <Content Include="porter_hall_sim.xml" />
     <Content Include="simple_setup.xml" />
     <Content Include="sim_setup.xml" />

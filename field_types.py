@@ -14,6 +14,7 @@ class FieldObject(object):
     def getPosition(self):
         pass
     def getRadiatedValues(self):
+        # freq, power, t
         return [(None, None, None)]
     def getMaxRadiatedValue(self):
         return None # DUNNO
@@ -49,13 +50,13 @@ class FieldSphere(object):
         self.reflect_limits = [[-np.inf, np.inf], [-np.inf, np.inf], [-np.inf, np.inf]] 
 
 
-    def reflectOffSurface(self, surf_coord, surf_at):
+    def reflectOffSurface(self, surf_coord, surf_at, surf_depth):
         # first get the vector from our source to the surface
         # so we can reflect ourselves on the other side of that
+        t = surf_depth
+
+
         test_limits = self.reflect_limits[surf_coord]
- 
-        # first check if we need to reflect:
-        t = -self.center[surf_coord] + surf_at
 
         if self.center[surf_coord] < surf_at:
             if t<0 or t>self.radius:
@@ -185,8 +186,8 @@ class Field(object):
         origSpheresList = self._sphereGenerator()
         allSpheresList = it.chain(origSpheresList, extraSpheres)
         together = it.izip(allSpheresList, repeatInfo)
-        allIntersections = it.imap(self._intersectionThreaded, together)
-        #allIntersections = self.sharedThreadPool.imap_unordered(self._intersectionThreaded, together, 8)
+        #allIntersections = it.imap(self._intersectionThreaded, together)
+        allIntersections = self.sharedThreadPool.imap_unordered(self._intersectionThreaded, together, 8)
         # now take the collisions and order them by object
         intersectionsByObject = defaultdict(list)
         for intersect in allIntersections:
@@ -202,17 +203,31 @@ class Field(object):
         s = args[0]
         obs = args[1]
         bounceList = []
-        # if the distance from us to the obstacle <= our radius, it intersects
-        for face in obs.faces:
-            bounceList.append(s.reflectOffSurface(*face))
+        # check for the closest surfaces
+        # in future, more checks needed
+        # TODO: make this prettier
+        selected = {}
+        for f in obs.faces:
+            key = f[0]
+            at = f[1]
+            t = -s.center[key] + at
+            if key not in selected:
+                selected[key] = (f[0], f[1], t)
+            else:
+                otherT = selected[key][2]
+                if abs(otherT) > t:
+                    selected[key] = (f[0],f[1],t)
+
+        for v in selected.values():
+            bounceList.append(s.reflectOffSurface(*v))
         bouncy = [i for i in bounceList if i is not None]
         return bouncy
         
 
     def intersectObstacles(self, obsList):
         allCombo = it.product(self._sphereGenerator(), obsList)
-        reflections = it.imap(self._obstacleThreaded, allCombo)
-        #reflections = self.sharedThreadPool.map(self._obstacleThreaded, allCombo)   
+        #reflections = it.imap(self._obstacleThreaded, allCombo)
+        reflections = self.sharedThreadPool.imap_unordered(self._obstacleThreaded, allCombo)   
         return it.chain.from_iterable(reflections)
 
              
@@ -267,7 +282,6 @@ class SemanticField(Field):
         self.minI = float(minIntensity)
 
     def combineValues(self, sphereList):
-
         intensities, phases = zip(*[(s.intensity, (2*np.pi*s.radius*s.frequency + s.phaseShift)) for s in sphereList])
         polard = np.multiply(intensities, np.exp(1j*np.array(phases)))
 

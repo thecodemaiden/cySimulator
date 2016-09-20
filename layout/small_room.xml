@@ -1,0 +1,29 @@
+<!-- 5m x 2.10m x 2m -->
+<layout>
+  <room name="Room1">
+    <wall name="ceiling">
+      <center>0, 1.05, 0</center>
+      <size>5.0, 0.1, 3.0</size>
+    </wall>
+    <wall name="floor">
+      <center>0,-1.05, 0</center>
+      <size>5.0, 0.1, 3.0</size>
+    </wall>
+    <wall name="labWall">
+      <center>-2.5, 0, 0</center>
+      <size>0.1, 2.10, 3.0</size>
+    </wall>
+    <wall name="ceeWall">
+      <center>2.5, 0, 0</center>
+      <size>0.1, 2.10, 3.0</size>
+    </wall>
+    <wall name="exitWall">
+      <center>0, 0, -1.5</center>
+      <size>5.0, 2.10, 0.1</size>
+    </wall>
+    <wall name="hallwayWall">
+      <center>0, 0, 1.5</center>
+      <size>5.0,2.10, 0.1</size>
+    </wall>
+  </room>
+</layout>

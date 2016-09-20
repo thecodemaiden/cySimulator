@@ -13,7 +13,7 @@ class Vpy_Visualization():
         self.obj = set()
         self.simFrames = 0
         self.objUpdates = 0
-        self.canvas = v.display(title='Simulation', width=1024, height=768)
+        self.canvas = v.display(title='Simulation', width=1024, height=768, background=(0.2,0.2,0.2))
         self.canvas.select()
         self.controls = vc.controls(x=640, y=0, range=20)
         self.infoLabel = v.label(display=self.controls.display,pos=(-10,-10), text='Click simulation to start', line=False)

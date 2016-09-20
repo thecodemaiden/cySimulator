@@ -7,68 +7,68 @@
     <count>1</count>
     <body>bodies/raspberry_pi.xml</body>
     <sensor name ="radio" class="SemanticRadio">
-      <param channel="17"/>
+      <param channel="80"/>
       <param address="0xe7e7e7e7e1" />
       <param rx_sens="3.98e-14" />
       <param tx_pow="0.0000631" />
     </sensor>
     <program>RequestRssi</program>
-    <position>4.7,-1.04, 1.0</position>
-  </device>
-  <device name="Quad5">
-    <count>1</count>
-    <body>bodies/quadcopter.xml</body>
-    <sensor name ="acc" class="Accelerometer"/>
-     <sensor name ="radio" class="SemanticRadio"> 
-       <param channel="17"/>
-       <param address="0xe7e7e7e7e7" />
-    </sensor>
-    <program>SendRssi</program>
-    <position>-1.56,-1.04, 0.66</position>
+    <position>4.7,-0.9, 2.0</position>
   </device>
   <device name="Quad1">
     <count>1</count>
     <body>bodies/quadcopter.xml</body>
     <sensor name ="acc" class="Accelerometer"/>
-    <sensor name ="radio" class="SemanticRadio">
-      <param channel="17"/>
-      <param address="0xe7e7e7e7e6" />
+     <sensor name ="radio" class="SemanticRadio"> 
+       <param channel="80"/>
+       <param address="0xe7e7e7e7e7" />
     </sensor>
     <program>SendRssi</program>
-    <position>-0.66,-1.04, 1.56</position>
-  </device>
-  <device name="Quad4">
-    <count>1</count>
-    <body>bodies/quadcopter.xml</body>
-    <sensor name ="acc" class="Accelerometer"/>
-    <sensor name ="radio" class="SemanticRadio">
-      <param channel="17"/>
-      <param address="0xe7e7e7e7e5" />
-    </sensor>
-    <program>SendRssi</program>
-    <position>1.56,-1.04, 0.66</position>
-  </device>
-  <device name="Quad3">
-    <count>1</count>
-    <body>bodies/quadcopter.xml</body>
-    <sensor name ="acc" class="Accelerometer"/>
-    <sensor name ="radio" class="SemanticRadio">
-      <param channel="17"/>
-      <param address="0xe7e7e7e7e4" />
-    </sensor>
-    <program>SendRssi</program>
-    <position>-1.56,-1.04, -0.66</position>
+    <position>-3.145,-0.9, -2.285</position>
   </device>
   <device name="Quad2">
     <count>1</count>
     <body>bodies/quadcopter.xml</body>
     <sensor name ="acc" class="Accelerometer"/>
     <sensor name ="radio" class="SemanticRadio">
-      <param channel="17"/>
+      <param channel="80"/>
+      <param address="0xe7e7e7e7e6" />
+    </sensor>
+    <program>SendRssi</program>
+    <position>1.915,-0.9, 0.508</position>
+  </device>
+  <device name="Quad3">
+    <count>1</count>
+    <body>bodies/quadcopter.xml</body>
+    <sensor name ="acc" class="Accelerometer"/>
+    <sensor name ="radio" class="SemanticRadio">
+      <param channel="80"/>
+      <param address="0xe7e7e7e7e5" />
+    </sensor>
+    <program>SendRssi</program>
+    <position>-1.955,-0.9, -3.655</position>
+  </device>
+  <device name="Quad4">
+    <count>1</count>
+    <body>bodies/quadcopter.xml</body>
+    <sensor name ="acc" class="Accelerometer"/>
+    <sensor name ="radio" class="SemanticRadio">
+      <param channel="80"/>
+      <param address="0xe7e7e7e7e4" />
+    </sensor>
+    <program>SendRssi</program>
+    <position>-3.145,-0.9, 0.015</position>
+  </device>
+  <device name="Quad5">
+    <count>1</count>
+    <body>bodies/quadcopter.xml</body>
+    <sensor name ="acc" class="Accelerometer"/>
+    <sensor name ="radio" class="SemanticRadio">
+      <param channel="80"/>
       <param address="0xe7e7e7e7e3" />
     </sensor>
     <program>SendRssi</program>
-    <position>-0.66,-1.04, -1.56</position>
+    <position>-1.995,-0.9, 0.665</position>
   </device>
    <layout file="layout/porter_hall.xml">
     <startRegion>(-6.065, -1.05, -4.385),(6.065,1.05,4.385)</startRegion>
