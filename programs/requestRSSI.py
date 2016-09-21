@@ -22,7 +22,7 @@ class RequestRssi(DeviceTask):
                 for add in self.quadAddresses:
                     self.radio.writePacket(sendTime, add, self.radio.channel, 0xff)
                     sendTime += 0.025
-                self.lastTime = dt
+                self.lastTime = now
         return 10
 
 taskClass = RequestRssi

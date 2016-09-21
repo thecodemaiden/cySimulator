@@ -76,6 +76,9 @@
     <Compile Include="object_types.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="programs\record_steps.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="programs\requestRSSI.py">
       <SubType>Code</SubType>
     </Compile>

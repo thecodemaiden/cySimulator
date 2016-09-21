@@ -31,3 +31,7 @@ class GenericDevice(Device):
         dims = [float(c) for c in dims.split(',')]
         self.dims = dims
 
+    def updatePhysics(self, dt):
+        for s in self.sensors.values():
+            s.update(dt)
+

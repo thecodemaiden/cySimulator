@@ -5,7 +5,7 @@
   </field>
   <device name="Commander">
     <count>1</count>
-    <body>bodies/raspberry_pi.xml</body>
+    <body>bodies/generic_device.xml</body>
     <sensor name ="radio" class="SemanticRadio">
       <param channel="80"/>
       <param address="0xe7e7e7e7e1" />

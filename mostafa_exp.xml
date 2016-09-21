@@ -1,4 +1,4 @@
-<sim log="sim_ph.log">
+<sim log="mostafa_exp.log">
   <field name="Vibration" class="VectorField">
     <param propSpeed="3500"/>
     <param minIntensity="1e-3"/>
@@ -7,63 +7,63 @@
     <count>1</count>
     <body>bodies/generic_device.xml</body>
     <sensor name ="geophone" class="Geophone"/>
-    <program>BasicTx</program>
+    <program>RecordSteps</program>
     <position>-2.155,-0.9, -3.185</position>
   </device>
   <device name="Geophone2">
     <count>1</count>
     <body>bodies/generic_device.xml</body>
     <sensor name ="geophone" class="Geophone"/>
-    <program>BasicTx</program>
-    <position>-1.155,-0.9, -1.685</position>
+    <program>RecordSteps</program>
+    <position>-3.155,-0.9, -1.685</position>
   </device>
   <device name="Geophone3">
     <count>1</count>
     <body>bodies/generic_device.xml</body>
     <sensor name ="geophone" class="Geophone"/>
-    <program>BasicTx</program>
+    <program>RecordSteps</program>
     <position>-2.155,-0.9, 0.315</position>
   </device>
   <device name="Geophone4">
     <count>1</count>
     <body>bodies/generic_device.xml</body>
     <sensor name ="geophone" class="Geophone"/>
-    <program>BasicTx</program>
+    <program>RecordSteps</program>
     <position>-0.155,-0.9, -3.185</position>
   </device>
   <device name="Geophone5">
     <count>1</count>
     <body>bodies/generic_device.xml</body>
     <sensor name ="geophone" class="Geophone"/>
-    <program>BasicTx</program>
-    <position>0.845,-0.9, -1.685</position>
+    <program>RecordSteps</program>
+    <position>-1.155,-0.9, -1.685</position>
   </device>
   <device name="Geophone6">
     <count>1</count>
     <body>bodies/generic_device.xml</body>
     <sensor name ="geophone" class="Geophone"/>
-    <program>BasicTx</program>
+    <program>RecordSteps</program>
     <position>-0.155,-0.9, 0.315</position>
   </device>
   <device name="Geophone7">
     <count>1</count>
     <body>bodies/generic_device.xml</body>
     <sensor name ="geophone" class="Geophone"/>
-    <program>BasicTx</program>
+    <program>RecordSteps</program>
     <position>1.845,-0.9, -3.185</position>
   </device>
   <device name="Geophone8">
     <count>1</count>
     <body>bodies/generic_device.xml</body>
     <sensor name ="geophone" class="Geophone"/>
-    <program>BasicTx</program>
-    <position>2.845,-0.9, -1.685</position>
+    <program>RecordSteps</program>
+    <position>0.845,-0.9, -1.685</position>
   </device>
   <device name="Geophone9">
     <count>1</count>
     <body>bodies/generic_device.xml</body>
     <sensor name ="geophone" class="Geophone"/>
-    <program>BasicTx</program>
+    <program>RecordSteps</program>
     <position>1.845,-0.9, 0.315</position>
   </device>
   <device name="StepGen">

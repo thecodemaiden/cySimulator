@@ -18,7 +18,7 @@ class BasicTx(DeviceTask):
             # send the packets to the quads
             if dt >= 0.5:
                 self.radio.writePacket(now, 0xe7e7e7e7e7, self.radio.channel, 0xff)
-                self.lastTime = dt
+                self.lastTime = now
         return 10
 
 taskClass = BasicTx

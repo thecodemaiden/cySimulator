@@ -1,5 +1,5 @@
 <body name="fake_stepper" class="FakeStepper">
-  <param name="stepPositions" value="4.585, -1.0, -2.67; 4.585, -1.0, -1.91; 4.585, -1.0, -1.15; 4.585, -1.0, -0.39; 4.585, -1.0, 0.37; 4.585, -1.0, 1.13; 4.585, -1.0, 1.89; 4.585, -1.0, 2.65"/>
+  <param name="stepPositions" value="0.875, -1.0, -2.67; 0.115, -1.0, -2.67; -0.645, -1.0, -2.67; -1.405, -1.0, -2.67; -2.165, -1.0, -2.67; -2.925, -1.0, -2.67; -3.685, -1.0, -2.67"/>
   <param name="stepDt" value="0.9"/>
   <param name="stepTSigma" value="0.05"/>
   <param name="stepPSigma" value="0.1"/>

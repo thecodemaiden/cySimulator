@@ -186,8 +186,8 @@ class Field(object):
         origSpheresList = self._sphereGenerator()
         allSpheresList = it.chain(origSpheresList, extraSpheres)
         together = it.izip(allSpheresList, repeatInfo)
-        #allIntersections = it.imap(self._intersectionThreaded, together)
-        allIntersections = self.sharedThreadPool.imap_unordered(self._intersectionThreaded, together, 8)
+        allIntersections = it.imap(self._intersectionThreaded, together)
+        #allIntersections = self.sharedThreadPool.imap_unordered(self._intersectionThreaded, together, 16)
         # now take the collisions and order them by object
         intersectionsByObject = defaultdict(list)
         for intersect in allIntersections:
@@ -226,8 +226,8 @@ class Field(object):
 
     def intersectObstacles(self, obsList):
         allCombo = it.product(self._sphereGenerator(), obsList)
-        #reflections = it.imap(self._obstacleThreaded, allCombo)
-        reflections = self.sharedThreadPool.imap_unordered(self._obstacleThreaded, allCombo)   
+        reflections = it.imap(self._obstacleThreaded, allCombo)
+        #reflections = self.sharedThreadPool.imap_unordered(self._obstacleThreaded, allCombo, 16)   
         return it.chain.from_iterable(reflections)
 
              
