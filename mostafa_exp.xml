@@ -1,42 +1,47 @@
 <sim log="mostafa_exp.log">
   <field name="Vibration" class="VectorField">
-    <param propSpeed="3500"/>
+    <param propSpeed="3000"/>
     <param minIntensity="1e-3"/>
   </field>
-  <device name="Geophone1">
+  <device name="Geophone7">
     <count>1</count>
     <body>bodies/generic_device.xml</body>
     <sensor name ="geophone" class="Geophone"/>
     <program>RecordSteps</program>
-    <position>-2.155,-0.9, -3.185</position>
+    <position>-2.155,-0.9, 3.815</position>
+    <color>0.5,0.0,0.0</color>
   </device>
-  <device name="Geophone2">
+  <device name="Geophone8">
     <count>1</count>
     <body>bodies/generic_device.xml</body>
     <sensor name ="geophone" class="Geophone"/>
     <program>RecordSteps</program>
-    <position>-3.155,-0.9, -1.685</position>
+    <position>-3.155,-0.9, 2.315</position>
+    <color>0.5,0.0,0.0</color>
   </device>
-  <device name="Geophone3">
+  <device name="Geophone9">
     <count>1</count>
     <body>bodies/generic_device.xml</body>
     <sensor name ="geophone" class="Geophone"/>
     <program>RecordSteps</program>
     <position>-2.155,-0.9, 0.315</position>
+    <color>0.5,0.0,0.0</color>
   </device>
   <device name="Geophone4">
     <count>1</count>
     <body>bodies/generic_device.xml</body>
     <sensor name ="geophone" class="Geophone"/>
     <program>RecordSteps</program>
-    <position>-0.155,-0.9, -3.185</position>
+    <position>-0.155,-0.9, 3.815</position>
+    <color>0.5,0.0,0.0</color>
   </device>
   <device name="Geophone5">
     <count>1</count>
     <body>bodies/generic_device.xml</body>
     <sensor name ="geophone" class="Geophone"/>
     <program>RecordSteps</program>
-    <position>-1.155,-0.9, -1.685</position>
+    <position>-1.155,-0.9, 2.315</position>
+    <color>0.5,0.0,0.0</color>
   </device>
   <device name="Geophone6">
     <count>1</count>
@@ -44,27 +49,31 @@
     <sensor name ="geophone" class="Geophone"/>
     <program>RecordSteps</program>
     <position>-0.155,-0.9, 0.315</position>
+    <color>0.5,0.0,0.0</color>
   </device>
-  <device name="Geophone7">
+  <device name="Geophone1">
     <count>1</count>
     <body>bodies/generic_device.xml</body>
     <sensor name ="geophone" class="Geophone"/>
     <program>RecordSteps</program>
-    <position>1.845,-0.9, -3.185</position>
+    <position>1.845,-0.9, 3.815</position>
+    <color>0.5,0.0,0.0</color>
   </device>
-  <device name="Geophone8">
+  <device name="Geophone2">
     <count>1</count>
     <body>bodies/generic_device.xml</body>
     <sensor name ="geophone" class="Geophone"/>
     <program>RecordSteps</program>
-    <position>0.845,-0.9, -1.685</position>
+    <position>0.845,-0.9, 2.315</position>
+    <color>0.5,0.0,0.0</color>
   </device>
-  <device name="Geophone9">
+  <device name="Geophone3">
     <count>1</count>
     <body>bodies/generic_device.xml</body>
     <sensor name ="geophone" class="Geophone"/>
     <program>RecordSteps</program>
     <position>1.845,-0.9, 0.315</position>
+    <color>0.5,0.0,0.0</color>
   </device>
   <device name="StepGen">
     <count>1</count>

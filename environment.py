@@ -155,6 +155,8 @@ class SimulationManager(PhysicalEnvironment, ComputeEnvironment):
         startTime = 0#time()
         if self.visualizer is not None:
             self.visualizer.startTime = time()
+            light1 = self.visualizer.canvas.lights[0]
+            light1.direction= (0.88, -0.22, 0.44)
             #self.visualizer.canvas.mouse.getclick()
         else:
             import msvcrt
@@ -162,7 +164,7 @@ class SimulationManager(PhysicalEnvironment, ComputeEnvironment):
             # TODO:  put keyboard input on separate thread...
         try:
             while True:
-                self.update(1.0/30)
+                self.update(self.dt)
                 if self.visualizer is not None:
                     self.visualizer.update(self.dt)
                 else:

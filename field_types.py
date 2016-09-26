@@ -99,7 +99,7 @@ class FieldSphere(object):
         self.radius = self.speed*(t-self.t1)
        
         if self.radius > 0:
-            self.intensity = self.totalPower/(self.radius*self.radius)
+            self.intensity = self.totalPower/self.radius#(self.radius*self.radius)
             self.intensity *= self.intensity_factor
 
 

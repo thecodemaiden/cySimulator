@@ -10,7 +10,7 @@ class Wall(PhysicalObject):
         self.dim = tuple(s*ls for s in size)
         self.centerPos = tuple(c*ls for c in center_pos)
         self.isPlane = not allSides
-        self.color = (0.5, 0.5, 0)
+        self.color = (0.75, 0.75, 0.75)
         self.makePhysicsBody()
         self.faces = []
         self.pts = []
@@ -35,14 +35,15 @@ class Wall(PhysicalObject):
     def makePhysicsBody(self):
         """ There is no actual physics body, just an immovable collision object """
         space = self.environment.space
-        self.geom = GeomBox(space, self.dim)
-        self.geom.setPosition(self.centerPos)
-        self.geom.setCategoryBits(2)
-        self.geom.setCollideBits(1)
+        geom = GeomBox(space, self.dim)
+        geom.setPosition(self.centerPos)
+        geom.setCategoryBits(2)
+        geom.setCollideBits(1)
+        self.geomList = [geom]
 
     def onVisualizationStart(self):
-        g = self.environment.visualizer.getGraphics(self.geom)
-        g.color = self.color
+        super(Wall,self).onVisualizationStart()
+        g = self.environment.visualizer.getGraphics(self.geomList[0])
         g.opacity = 0.2
     
     @classmethod

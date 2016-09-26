@@ -6,7 +6,7 @@ class Geophone(FieldObject):
     def __init__(self, entity, params):
         self.device = entity
         deviceName = self.device.name
-        self.decayRate = params.get('decayRate', 14.0)
+        self.decayRate = params.get('decayRate', 10.0)
         self.device.environment.addFieldObject('Vibration', self)
         self.value = 0
 

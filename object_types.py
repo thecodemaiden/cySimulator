@@ -1,17 +1,25 @@
 from ode import AMotor, AMotorEuler
 
-class PhysicalObject(object):
+class _Base(object):
+    def __init__(self, *args):
+        pass
+
+class PhysicalObject(_Base):
     """Common methods for objects that are part of the physical simulation"""
     def __init__(self, environment):
+        super(PhysicalObject, self).__init__(environment)
         self.environment = environment
         self.logger = None
-        self.isReflective = False
+        self.color = (1.0,1.0,1.0)
+        self.geomList = []
 
     def updatePhysics(self, dt):
         pass
 
     def onVisualizationStart(self):
-        pass
+        for geom in self.geomList:
+            g = self.environment.visualizer.getGraphics(geom)
+            g.color = self.color
 
     def setPosition(self, pos):
         x,y,z = [self.environment.lengthScale*c for c in pos]
@@ -20,9 +28,10 @@ class PhysicalObject(object):
     def getPosition(self):
         return self.physicsBody.getPosition()
 
-class ComputationalObject(object):
+class ComputationalObject(_Base):
     """ Common methods for objects that are part of the computational simulation """
     def __init__(self, environment):
+        super(ComputationalObject, self).__init__(environment)
         self.environment = environment
         self.deviceTask = None
         self.logger = None

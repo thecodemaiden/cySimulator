@@ -52,7 +52,12 @@ class ConfigReader(object):
                     s = w.find('size')
                     size = self._extractListStr(s.text)
                     size = [float(p) for p in size]
-                    wallList[wallName] = Wall(size, pos, self.environment, False)
+                    wall = Wall(size, pos, self.environment, False)
+                    color = w.findtext('color')
+                    if color is not None:
+                        color = [float(p) for p in self._extractListStr(color)]
+                        wall.color = color
+                    wallList[wallName] = wall
 
                 doors = child.findall('door')
                 for d in doors:
@@ -74,7 +79,13 @@ class ConfigReader(object):
                     s = o.find('size')
                     size = self._extractListStr(s.text)
                     size = [float(p) for p in size]
-                    wallList[wallName] = Wall(size, pos, self.environment, True)
+                    wall = Wall(size, pos, self.environment, True)
+                    color = o.findtext('color')
+                    if color is not None:
+                        color = [float(p) for p in self._extractListStr(color)]
+                        wall.color = color
+                    wallList[wallName] = wall
+
 
         holeWalls = []
 
@@ -128,7 +139,7 @@ class ConfigReader(object):
             hndlr.setFormatter(logging.Formatter(fmt='%(name)s[%(levelname)s]: %(message)s'))
             logger.addHandler(hndlr)
 
-        sim = SimulationManager(1.0/20)
+        sim = SimulationManager(1.0/100)
         cr = ConfigReader(sim) # TODO: these should all be class methods...?
         
         # create the fields
@@ -171,6 +182,7 @@ class ConfigReader(object):
         deviceTypes = root.findall('device')
         for dv in deviceTypes:
             bodyFile = dv.findtext('body')
+            color = dv.findtext('color')
             namePrefix = dv.attrib.get('namePrefix', 'Device')
             devName = dv.attrib.get('name', None)
             sensorSpecs = dv.findall('sensor')
@@ -216,6 +228,9 @@ class ConfigReader(object):
                 deviceBody.setPosition((x,y,z))
                 if taskClass is not None:
                     deviceBody.deviceTask = taskClass(deviceBody)
+                if color is not None:
+                    color = [float(x) for x in cr._extractListStr(color)]
+                    deviceBody.color = color
 
         return sim
 

@@ -4,7 +4,6 @@ from field_types import FieldObject
 from random import gauss
 from bisect import bisect_left
 from sensors import Geophone
-from collections import OrderedDict
 
 class FakeStepper(Device, FieldObject):
     """An object with no body that generates fake footstep vibrations"""
@@ -14,9 +13,16 @@ class FakeStepper(Device, FieldObject):
 
         mainBody = ode.Body(physicsWorld)
         mainBody.setKinematic()
+
+        #geom = ode.GeomSphere(self.environment.space, 0.1)
+        #geom.setBody(mainBody)
+        #geom.setCategoryBits(8)
+        #geom.setCollideBits(0)
+        #self.geomList = [geom]
        
         self.physicsBody = mainBody
         self.environment.addFieldObject('Vibration', self)
+
 
     def getRadiatedValues(self):
         if not self.stepMade:
@@ -33,37 +39,53 @@ class FakeStepper(Device, FieldObject):
         for p in posList:
             p = [float(i) for i in p.split(',')]
             self.stepPositions.append(p)
+        self.stepPositions.reverse()
+        stepT = params.get('stepTimes')
+        if stepT is not None:
+            self.stepTimes = [float(x) for x in stepT.split(';')]
+        else:
+            self.stepTimes = self.generateStepTimes(len(self.stepPositions))
 
         self.stepDt = float(params.get('stepDt', 1.0))
         self.stepTSigma = float(params.get('stepTSigma', 0.1))
         self.stepPSigma = float(params.get('stepPSigma', 0.1))
+    
         self.stepMade  = False
         self.lastT = 0
-        self.steps = OrderedDict()
+        self.steps = {}
         self.prepareSteps()
-        self.stepT = self.steps.keys()[0]
+        self.stepT = self.stepTimes[0]
         self.currentStep = self.steps[self.stepT]
 
+    def generateStepTimes(self, n):
+        t = 0.4
+        arr = []
+        for i in range(n):
+            t += abs(gauss(self.stepDt, self.stepTSigma))
+            arr.append(t)
+
+        return arr
 
     def updatePhysics(self, dt):
         self.lastT = self.environment.time
-        allT = self.steps.keys()
-        currTIdx = bisect_left(allT, self.lastT)
+        currTIdx = bisect_left(self.stepTimes, self.lastT)
         # the value at currTIdx >= now
-        if currTIdx >= len(allT):
+        if currTIdx >= len(self.stepTimes):
             return
-        if self.stepMade and allT[currTIdx] != self.stepT:
+        if self.stepMade and self.stepTimes[currTIdx] != self.stepT:
             self.stepMade = False
-            self.stepT = allT[currTIdx]
+            self.stepT = self.stepTimes[currTIdx]
             self.currentStep = self.steps[self.stepT]
-            self.setPosition(self.currentStep[0])
+        self.setPosition(self.currentStep[0])
+
+            
 
     def prepareSteps(self):
-        t = 1.0
-        dIntensity = self.stepPSigma*150
-        for pos in self.stepPositions:
-            t += abs(gauss(self.stepDt, 0.1))
-            stepIntensity = gauss(150, dIntensity)
-            self.steps[t] = (pos, stepIntensity)
+        n = len(self.stepPositions)
+        intensity = 20
+        dIntensity = self.stepPSigma*intensity
+        for i in range(n):
+            stepIntensity = gauss(intensity, dIntensity)
+            self.steps[self.stepTimes[i]] = (self.stepPositions[i], stepIntensity)
 
 
