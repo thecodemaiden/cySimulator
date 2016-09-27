@@ -39,7 +39,6 @@ class FakeStepper(Device, FieldObject):
         for p in posList:
             p = [float(i) for i in p.split(',')]
             self.stepPositions.append(p)
-        self.stepPositions.reverse()
         stepT = params.get('stepTimes')
         if stepT is not None:
             self.stepTimes = [float(x) for x in stepT.split(';')]
