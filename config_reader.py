@@ -105,6 +105,8 @@ class ConfigReader(object):
         try:
             taskClass = getattr(programs, className)
         except AttributeError:
+            import pdb
+            pdb.set_trace()
             return None
         return taskClass
 
@@ -116,6 +118,8 @@ class ConfigReader(object):
         try:
             bodyClass = getattr(bodies, className)
         except AttributeError:
+            import pdb
+            pdb.set_trace()
             return None # no such body
         params = {}
         params['environment'] = self.environment
@@ -130,7 +134,11 @@ class ConfigReader(object):
     def readSimulationFile(cls, filename):
         bodyTree = etree.parse(filename)
         root = bodyTree.getroot()
+        return cls._loadSimulationConfig(root)
 
+    @classmethod
+    def _loadSimulationConfig(cls, xmlRoot):
+        root = xmlRoot
         logFile = root.get('log')
         if logFile is not None:
             logger = logging.getLogger("Quadsim")
@@ -139,7 +147,7 @@ class ConfigReader(object):
             hndlr.setFormatter(logging.Formatter(fmt='%(name)s[%(levelname)s]: %(message)s'))
             logger.addHandler(hndlr)
 
-        sim = SimulationManager(1.0/100)
+        sim = SimulationManager(1.0/20)
         cr = ConfigReader(sim) # TODO: these should all be class methods...?
         
         # create the fields
@@ -156,6 +164,8 @@ class ConfigReader(object):
                 f = fieldClass(**attrInfo)
                 sim.addField(name, f)
             except AttributeError:
+                import pdb
+                pdb.set_trace()
                 pass # TODO: log an error?
 
         # now read the layout file
@@ -183,6 +193,9 @@ class ConfigReader(object):
         for dv in deviceTypes:
             bodyFile = dv.findtext('body')
             color = dv.findtext('color')
+            if color is not None:
+                color = [float(x) for x in cr._extractListStr(color)]
+
             namePrefix = dv.attrib.get('namePrefix', 'Device')
             devName = dv.attrib.get('name', None)
             sensorSpecs = dv.findall('sensor')
@@ -204,6 +217,8 @@ class ConfigReader(object):
                         paramList[name].update(p.attrib) # TODO: params should be elements...
                     sensorList[name] = sensorClass
                 except AttributeError:
+                    import pdb
+                    pdb.set_trace()
                     pass
             nDevices = int(dv.findtext('count', 1))
             for i in range(nDevices):
@@ -229,7 +244,6 @@ class ConfigReader(object):
                 if taskClass is not None:
                     deviceBody.deviceTask = taskClass(deviceBody)
                 if color is not None:
-                    color = [float(x) for x in cr._extractListStr(color)]
                     deviceBody.color = color
 
         return sim

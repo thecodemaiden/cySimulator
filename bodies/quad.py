@@ -95,6 +95,10 @@ class Quadcopter(Device):
         firstArmGeom.setBody(mainBody)
         secondArmGeom.setBody(mainBody)
 
+        #self.vizGeom = ode.GeomSphere(space, 0.25)
+        #self.vizGeom.setCategoryBits(8)
+        #self.vizGeom.setCollideBits(8)
+
         self.geomList = [firstArmGeom, secondArmGeom]
         self.physicsBody = mainBody
 
@@ -149,7 +153,7 @@ class Quadcopter(Device):
 
 
     def updatePhysics(self,dt):
-
+        #self.vizGeom.setPosition(self.physicsBody.getPosition())
         for dv in self.sensors.values():
             dv.update(dt)
 

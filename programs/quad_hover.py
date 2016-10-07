@@ -8,7 +8,6 @@ from random import randint
 
 ### Needed from computational environment:
 ###     getTime
-
 class QuadHover(DeviceTask):
     """ Just keep the quadcopter hovering in place"""
     def setup(self):
@@ -35,11 +34,12 @@ class QuadHover(DeviceTask):
              # all PID and radio stuff will move to programs
         
             if dt >= 0.5:
-                self.radio.writePacket(0x12345678L, channel, "TEST")
                 self.lastTime = self.environment.time
-        #### log accel values  
+                self.radio.writePacket(self.lastTime, 0x12345678L, channel, "TEST")
+        #### log accel values
         #v = self.sensors['acc'].getValue()
-        #self.device.logger.info('{}.acc x: {}\ty: {}\tz: {}'.format(self.name, *v))
+        #self.device.logger.info('{}.acc x: {}\ty: {}\tz: {}'.format(self.name,
+        #*v))
         ####
         return 50
 

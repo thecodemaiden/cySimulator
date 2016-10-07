@@ -44,6 +44,7 @@ class PhysicalEnvironment(object):
         self.forceScale = self.massScale*self.lengthScale
         self.fieldList = {}
         self.dt = dt
+        self.nCollisions = 0
 
         self.world.setGravity((0,-9.81*self.forceScale,0))
         self.world.setCFM(1e-5)
@@ -100,7 +101,7 @@ class PhysicalEnvironment(object):
     def near_callback(self, args, geom1, geom2):
         # Check if the objects do collide
         contacts = ode.collide(geom1, geom2)
-
+        self.nCollisions += 1
         # Create contact joints
         for c in contacts:
             c.setBounce(0.7)

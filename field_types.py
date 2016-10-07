@@ -197,6 +197,7 @@ class Field(object):
             # TODO: combine wavefronts that interfere
             newWave = self.combineValues(sList)
             o.detectField(newWave)
+   
            
 
     def _obstacleThreaded(self, args):

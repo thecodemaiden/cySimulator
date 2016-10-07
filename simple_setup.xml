@@ -3,6 +3,7 @@
     <param propSpeed="3e8"/>
     <param minIntensity="1e-30"/>
   </field>
+  <!--
   <device name="TestDevice">
     <count>1</count>
     <body>bodies/generic_device.xml</body>
@@ -15,7 +16,19 @@
     <program>BasicTx</program>
     <position>0.0,-0.95, 1.0</position>
   </device>
-  <layout file="layout/small_room.xml">
-    <startRegion>(-2.5, -1.05, -1.5),(2.5,1.05,1.5)</startRegion>
+  -->
+  <device name="Quad">
+    <count>1000</count>
+    <body>bodies/quadcopter.xml</body>
+    <sensor name ="radio" class="SemanticRadio">
+      <param channel="17"/>
+    </sensor>
+    <sensor name="acc" class="Accelerometer" />
+    <program>QuadRandomWalk</program>
+    <color>1.0,0.0,1.0</color>
+  </device>
+  <layout file="layout/huge_room.xml">
+    <!--<startRegion>(-2.5, -1.05, -1.5),(2.5,1.05,1.5)</startRegion>-->
+    <startRegion>(-20, -10, -20), (20, 10, 20)</startRegion>
   </layout>
 </sim>

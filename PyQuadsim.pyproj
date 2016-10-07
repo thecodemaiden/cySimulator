@@ -76,6 +76,9 @@
     <Compile Include="object_types.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="programs\quad_random_walk.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="programs\record_steps.py">
       <SubType>Code</SubType>
     </Compile>
@@ -132,6 +135,7 @@
     <Content Include="bodies\quadcopter.xml" />
     <Content Include="bodies\generic_device.xml" />
     <Content Include="layout\example_layout.xml" />
+    <Content Include="layout\huge_room.xml" />
     <Content Include="layout\porter_hall.xml" />
     <Content Include="layout\small_room.xml" />
     <Content Include="mostafa_exp.xml" />
