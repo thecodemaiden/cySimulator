@@ -1,0 +1,29 @@
+<!-- 40 x 20m x 40m -->
+<layout>
+  <room name="Room1">
+    <wall name="ceiling">
+      <center>0, 10, 0</center>
+      <size>40.0, 0.1, 40.0</size>
+    </wall>
+    <wall name="floor">
+      <center>0,-10, 0</center>
+      <size>40.0, 0.1, 40.0</size>
+    </wall>
+    <wall name="labWall">
+      <center>-20, 0, 0</center>
+      <size>0.1, 20, 40.0</size>
+    </wall>
+    <wall name="ceeWall">
+      <center>20, 0, 0</center>
+      <size>0.1, 20, 40.0</size>
+    </wall>
+    <wall name="exitWall">
+      <center>0, 0, -20</center>
+      <size>40.0, 20, 0.1</size>
+    </wall>
+    <wall name="hallwayWall">
+      <center>0, 0, 20</center>
+      <size>40,20, 0.1</size>
+    </wall>
+  </room>
+</layout>

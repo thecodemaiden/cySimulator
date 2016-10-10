@@ -2,16 +2,22 @@ from field_types import FieldObject
 import logging
 
 class Geophone(FieldObject):
-    """Ground vibration sensor"""
+    """Ground vibration sensor""" 
     def __init__(self, entity, params):
         self.device = entity
         deviceName = self.device.name
         self.decayRate = params.get('decayRate', 10.0)
         self.device.environment.addFieldObject('Vibration', self)
         self.value = 0
+        self.flagged = False
+
 
     def detectField(self, fieldValue):
+        now = self.device.environment.time
+        inTime = fieldValue.tArr
         self.value += fieldValue.intensity
+        interp = -self.decayRate*(now-inTime)*self.value
+        self.value += interp
 
     def getValue(self):
         return self.value

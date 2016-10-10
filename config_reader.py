@@ -139,7 +139,10 @@ class ConfigReader(object):
             hndlr.setFormatter(logging.Formatter(fmt='%(name)s[%(levelname)s]: %(message)s'))
             logger.addHandler(hndlr)
 
-        sim = SimulationManager(1.0/100)
+        fs = root.get('sampleRate', '40')
+        dt = 1.0/(float(fs))
+
+        sim = SimulationManager(dt)
         cr = ConfigReader(sim) # TODO: these should all be class methods...?
         
         # create the fields

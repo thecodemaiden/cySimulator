@@ -1,6 +1,6 @@
 <sim log="mostafa_exp.log">
   <field name="Vibration" class="VectorField">
-    <param propSpeed="3841"/>
+    <param propSpeed="680"/>
     <param minIntensity="1e-3"/>
   </field>
   <device name="Geophone7">

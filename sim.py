@@ -15,6 +15,7 @@ def runSimulationFile(filename, withViz, timeout=None):
         scene = sim.visualizer.canvas
         scene.autoscale = False
         scene.autocenter =False
+        scene.center = (0,-0.7, 0)
 
     sim.start()
     print('Simulation start')
@@ -43,7 +44,7 @@ if __name__ == '__main__':
     #for n in ['sim100_radio.xml']:
     #    print("\t--- {} ---\t". format(n))
     #    benchmarkFile('profile_setup/'+n)
-    runSimulationFile('mostafa_exp.xml', True, 10.0)
+    runSimulationFile('shijia_exp.xml', False, 110.0)
     #import visual as v
     #v.rate(1)
    # v.exit()

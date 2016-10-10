@@ -3,19 +3,19 @@
     <param propSpeed="3e8"/>
     <param minIntensity="1e-30"/>
   </field>
-  <device name="TestDevice">
+  <device name="Quad">
     <count>1</count>
-    <body>bodies/generic_device.xml</body>
+    <body>bodies/quadcopter.xml</body>
     <sensor name ="radio" class="SemanticRadio">
       <param channel="17"/>
       <param address="0xe7e7e7e7e1" />
       <param rx_sens="3.98e-14" />
       <param tx_pow="0.0000631" />
     </sensor>
-    <program>BasicTx</program>
-    <position>0.0,-0.95, 1.0</position>
+    <program>SinuFlight</program>
+    <position>0.0,1.0, 0.0</position>
   </device>
-  <layout file="layout/small_room.xml">
+  <layout file="layout/huge_room.xml">
     <startRegion>(-2.5, -1.05, -1.5),(2.5,1.05,1.5)</startRegion>
   </layout>
 </sim>

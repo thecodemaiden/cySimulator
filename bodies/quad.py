@@ -169,7 +169,7 @@ class Quadcopter(Device):
         v = self.physicsBody.getLinearVel()
         vMag = norm(v)
         airFriction = (array(v)*-self.airFrictionCoefficient*vMag)
-        self.physicsBody.addForce(airFriction)
+        #self.physicsBody.addForce(airFriction)
 
     
 class PidController(object):

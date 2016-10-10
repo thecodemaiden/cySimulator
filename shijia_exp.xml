@@ -1,0 +1,45 @@
+<sim log="shijia_exp.log" sampleRate="25000">
+  <field name="Vibration" class="VectorField">
+    <param propSpeed="350"/>
+    <param minIntensity="1e-5"/>
+  </field>
+  <device name="Geophone1">
+    <count>1</count>
+    <body>bodies/generic_device.xml</body>
+    <sensor name ="geophone" class="Geophone"/>
+    <program>RecordSteps</program>
+    <position>4,-9.9, 4</position>
+    <color>1.0,1.0,0.3</color>
+  </device>
+  <device name="Geophone2">
+    <count>1</count>
+    <body>bodies/generic_device.xml</body>
+    <sensor name ="geophone" class="Geophone"/>
+    <program>RecordSteps</program>
+    <position>4,-9.9, -4</position>
+    <color>1.0,0.5,0.5</color>
+  </device>
+  <device name="Geophone3">
+    <count>1</count>
+    <body>bodies/generic_device.xml</body>
+    <sensor name ="geophone" class="Geophone"/>
+    <program>RecordSteps</program>
+    <position>-4,-9.9, 4</position>
+    <color>0.5,1.0,0.5</color>
+  </device>
+  <device name="Geophone4">
+    <count>1</count>
+    <body>bodies/generic_device.xml</body>
+    <sensor name ="geophone" class="Geophone"/>
+    <program>RecordSteps</program>
+    <position>-4,-9.9, -4</position>
+    <color>0.0,0.5,0.0</color>
+  </device>
+  <device name="StepGen">
+    <count>1</count>
+    <body>bodies/fake_stepper.xml</body>
+  </device>
+  <layout file="layout/huge_room.xml">
+    <startRegion>(-6.065, -1.05, -4.385),(6.065,1.05,4.385)</startRegion>
+  </layout>
+</sim>

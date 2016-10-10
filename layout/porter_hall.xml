@@ -27,17 +27,21 @@
     </wall>
     <!-- TODO: add hallway hole-->
     <obstacle name="column1">
-      <center>1.725, 0, 1.275</center>
+      <center>2.34, 0, -2.045</center>
       <size>0.56, 2.10, 0.56</size>
     </obstacle>
     <obstacle name="column2">
-      <center>-3.285, 0, 1.275</center>
+      <center>-2.34, 0, -2.045</center>
       <size>0.56, 2.10, 0.56</size>
     </obstacle>
     <obstacle name="trash">
-      <center>5.705, -0.56, 1.47</center>
+      <center>5.705, -0.56, -1.47</center>
       <size>0.72, 0.98, 1.05</size>
       <color>0.0,0.5,0.5</color>
     </obstacle>
+    <door wall="hallwayWall">
+      <center>0.395, 0, z</center>
+      <size>4.7,2.10, z</size>
+    </door>
   </room>
 </layout>

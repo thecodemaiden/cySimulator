@@ -99,7 +99,7 @@ class FieldSphere(object):
         self.radius = self.speed*(t-self.t1)
        
         if self.radius > 0:
-            self.intensity = self.totalPower/self.radius#(self.radius*self.radius)
+            self.intensity = self.totalPower/(4*np.pi*self.radius*self.radius)
             self.intensity *= self.intensity_factor
 
 
@@ -282,8 +282,8 @@ class SemanticField(Field):
         self.minI = float(minIntensity)
 
     def combineValues(self, sphereList):
-        intensities, phases = zip(*[(s.intensity, (2*np.pi*s.radius*s.frequency + s.phaseShift)) for s in sphereList])
-        polard = np.multiply(intensities, np.exp(1j*np.array(phases)))
+        amplitudes, phases = zip(*[(np.sqrt(s.intensity), (2*np.pi*s.radius*s.frequency + s.phaseShift)) for s in sphereList])
+        polard = np.multiply(amplitudes, np.exp(1j*np.array(phases)))
 
         probs = np.abs(np.real(polard))
         probs = probs/np.sum(probs)
@@ -297,9 +297,10 @@ class SemanticField(Field):
 
         chosen = sphereList[i]
 
-        strongest = sphereList[intensities.index(max(intensities))]
+        strongest = sphereList[amplitudes.index(max(amplitudes))]
         polar_sum = np.sum(polard)
-        newIntensity = np.abs(np.real(polar_sum))
+        newAmplitude = np.abs(np.real(polar_sum))
+        newIntensity = newAmplitude*newAmplitude
 
         newSphere = FieldSphere((0,0,0), 0, 0, 0, 0, chosen.data)
         newSphere.intensity = newIntensity

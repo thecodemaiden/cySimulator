@@ -52,27 +52,6 @@
     <Compile Include="config_reader.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="experimental\clip_test.py">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="experimental\common.py">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="experimental\field.py" />
-    <Compile Include="experimental\mobile_object.py" />
-    <Compile Include="experimental\reflection_field.py">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="experimental\rf24_spread.py">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="experimental\rssi24_test.py">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="experimental\sound_test.py">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="experimental\world.py" />
     <Compile Include="object_types.py">
       <SubType>Code</SubType>
     </Compile>
@@ -83,6 +62,9 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="programs\sendRSSI.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="programs\sinu_flight.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="programs\__init__.py">
@@ -122,7 +104,6 @@
   <ItemGroup>
     <Folder Include="bodies\" />
     <Folder Include="layout\" />
-    <Folder Include="experimental\" />
     <Folder Include="programs\" />
     <Folder Include="sensors\" />
     <Folder Include="vpyViz\" />
@@ -136,6 +117,7 @@
     <Content Include="layout\small_room.xml" />
     <Content Include="mostafa_exp.xml" />
     <Content Include="porter_hall_sim.xml" />
+    <Content Include="shijia_exp.xml" />
     <Content Include="simple_setup.xml" />
     <Content Include="sim_setup.xml" />
   </ItemGroup>

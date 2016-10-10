@@ -78,13 +78,6 @@ class PhysicalEnvironment(object):
         nSteps = int(np.ceil(crude_dt/self.dt))
         crude_dt = self.dt*nSteps
 
-        oldTime = self.time
-        div = 1
-        for f in self.fieldList.values(): # TODO: make the fields into encapsualted 'physics objects'
-            for i in range(div):
-                oldTime += crude_dt/div
-                f.update(oldTime)
-
         for i in range(nSteps):
             for o in self.objectList:
                 try:
@@ -96,6 +89,15 @@ class PhysicalEnvironment(object):
             self.space.collide(None, self.near_callback)
             self.world.quickStep(self.dt)
             self.contactGroup.empty()
+
+        
+        oldTime = self.time
+        #div = 1
+        for f in self.fieldList.values(): # TODO: make the fields into encapsualted 'physics objects'
+            #for i in range(div):
+                #oldTime += crude_dt/div
+                f.update(oldTime)
+
 
     def near_callback(self, args, geom1, geom2):
         # Check if the objects do collide
@@ -147,8 +149,9 @@ class SimulationManager(PhysicalEnvironment, ComputeEnvironment):
         self.time = 0
 
     def update(self, dt):
-        self.updateComputation(dt)
         self.updatePhysics(dt)
+        self.updateComputation(dt)
+
         self.time += dt
 
     def runloop(self, timeout):

@@ -1,4 +1,5 @@
 from device_task import DeviceTask
+import logging
 
 class SendRssi(DeviceTask):
     """Just sit tight and record RSSI"""
@@ -9,7 +10,7 @@ class SendRssi(DeviceTask):
             self.hasRadio = True
             self.radio = radio
         self.lastTime = self.environment.time
-        self.device.setPidTarget([0,0,0,0])
+        self.logger = logging.getLogger(name='Quadsim.{}'.format(self.device.name))
         return 0
 
     def loop(self):
@@ -20,7 +21,7 @@ class SendRssi(DeviceTask):
             # TODO: 'send' RSSI to RPi
             channel = self.radio.channel
             if self.radio.isAvailable():
-                self.device.logger.info('[{}] RSSI: {}'.format(self.device.name, self.radio.lastRssi))
+                self.logger.info('[{}] RSSI: {}'.format(self.device.name, self.radio.lastRssi))
 
                 p = self.radio.readPacket()
                 # hardcoded RPi address
