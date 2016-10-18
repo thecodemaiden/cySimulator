@@ -1,4 +1,4 @@
-<sim log="sim_simple.log">
+<sim log="poop.log">
   <field name="RF_Semantic" class="SemanticField">
     <param propSpeed="3e8"/>
     <param minIntensity="1e-30"/>
@@ -12,10 +12,11 @@
       <param rx_sens="3.98e-14" />
       <param tx_pow="0.0000631" />
     </sensor>
-    <program>SinuFlight</program>
-    <position>0.0,1.0, 0.0</position>
+    <program>QuadHover</program>
+    <position>0.0,-0.2, 0.0</position>
+    <color>0.7, 0.5, 0.0</color>
   </device>
-  <layout file="layout/huge_room.xml">
+  <layout file="layout/small_room.xml">
     <startRegion>(-2.5, -1.05, -1.5),(2.5,1.05,1.5)</startRegion>
   </layout>
 </sim>

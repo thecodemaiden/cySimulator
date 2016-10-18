@@ -44,7 +44,7 @@ if __name__ == '__main__':
     #for n in ['sim100_radio.xml']:
     #    print("\t--- {} ---\t". format(n))
     #    benchmarkFile('profile_setup/'+n)
-    runSimulationFile('shijia_exp.xml', False, 110.0)
+    runSimulationFile('simple_setup.xml', True, None)
     #import visual as v
     #v.rate(1)
    # v.exit()

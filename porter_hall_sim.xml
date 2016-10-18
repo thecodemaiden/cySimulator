@@ -1,4 +1,4 @@
-<sim log="sim_ph.log" sampleRate="30">
+<sim log="sim_poop.log" sampleRate="50">
   <field name="RF_Semantic" class="SemanticField">
     <param propSpeed="3e8"/>
     <param minIntensity="1e-30"/>
@@ -25,7 +25,7 @@
     </sensor>
     <program>SendRssi</program>
     <position>-2.875,-0.9, 2.285</position>
-    <color>1.0, 0.4, 0.0</color>
+    <color>0.0, 0.4, 0.0</color>
   </device>
   <device name="Quad2">
     <count>1</count>

@@ -35,7 +35,7 @@ class QuadHover(DeviceTask):
              # all PID and radio stuff will move to programs
         
             if dt >= 0.5:
-                self.radio.writePacket(0x12345678L, channel, "TEST")
+                self.radio.writePacket(self.environment.time, 0x12345678L, channel, "TEST")
                 self.lastTime = self.environment.time
         #### log accel values  
         #v = self.sensors['acc'].getValue()
