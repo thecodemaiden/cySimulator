@@ -5,7 +5,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{e1ff6596-fc9a-4fdf-9288-d3e76ce33a0e}</ProjectGuid>
     <ProjectHome />
-    <StartupFile>sim.py</StartupFile>
+    <StartupFile>experimental\ode_waves.py</StartupFile>
     <SearchPath />
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
@@ -32,6 +32,10 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="bodies\__init__.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="experimental\field_types.py" />
+    <Compile Include="experimental\ode_waves.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="field_types.py">
@@ -103,6 +107,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="bodies\" />
+    <Folder Include="experimental\" />
     <Folder Include="layout\" />
     <Folder Include="programs\" />
     <Folder Include="sensors\" />
