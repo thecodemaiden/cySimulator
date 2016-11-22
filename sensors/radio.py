@@ -19,7 +19,7 @@ class Radio(FieldObject):
         else:
             add = long(add, 16)
         self.address = add
-
+        self.environment = self.device.environment
         self.device.environment.addFieldObject('RF', self)
         self.lastRssi = 0
         self.emissionQueue = []
@@ -29,20 +29,29 @@ class Radio(FieldObject):
 
     def update(self, dt):
         # TODO: tx power up time?  rx delays?
-        now = self.environment.time
-        for val in self.emissionQueue[:]:
-            if val[2] <= now:
-                self.emissionQueue.remove(val)
+        pass
+
+    def writePacket(self, t, address, channel, message):
+        # ignore message
+        toEmit = (self.transFrequency, self.tx_power, t)
+        self.emissionQueue.append(toEmit)
+
 
     def detectField(self, fieldValue):
-        """Register any readings, if necessary. fieldvalue is a FieldSphere """
+        """Register any readnigs, if necessary. fieldvalue is a FieldSphere """
         intensity = fieldValue.intensity
         if intensity >= self.rx_sensitivity:
             self.lastRssi = 10*numpy.log10(1000*intensity)
             #TODO: check address... ?!
 
     def getRadiatedValues(self):
-        return [(0, 0)] # XXX: HAX!!self.tx_power
+        outVals = []
+        now = self.environment.time
+        for e in self.emissionQueue[:]:
+            if e[2] <= now:
+                outVals.append(e)
+                self.emissionQueue.remove(e)
+        return outVals
 
     def getPosition(self):
         return self.device.physicsBody.getPosition()

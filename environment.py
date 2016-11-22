@@ -51,7 +51,6 @@ class PhysicalEnvironment(object):
         self.world.setContactSurfaceLayer(0.001)
         self.time = 0
         self.contactGroup = ode.JointGroup()
-
         self.objectList = [] 
         self.obstacleList = []       
 
@@ -135,6 +134,7 @@ class SimulationManager(PhysicalEnvironment, ComputeEnvironment):
         self.draw = True
         self.visualizer = None
         self.dt = dt;
+        self.geomLookup = {}
 
     def setVisualizer(self, vClass, *args):
         if self.visualizer is not None:
@@ -153,6 +153,22 @@ class SimulationManager(PhysicalEnvironment, ComputeEnvironment):
         self.updateComputation(dt)
 
         self.time += dt
+
+    def getObjectFromGeom(self,geom):
+        if geom not in self.geomLookup:
+            for o in self.objectList:
+                try:
+                    if geom in o.geomList:
+                        self.geomLookup[geom] = o
+                except AttributeError:
+                    pass
+                try:
+                    if o.geom == geom:
+                        self.geomLookup[geom] = o
+                except AttributeError:
+                    pass
+
+        return self.geomLookup.get(geom)
 
     def runloop(self, timeout):
         startTime = 0#time()

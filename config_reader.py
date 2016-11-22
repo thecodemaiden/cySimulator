@@ -82,7 +82,7 @@ class ConfigReader(object):
                     wall = Wall(size, pos, self.environment, True)
                     color = o.findtext('color')
                     if color is not None:
-                        color = [float(p) for p in self._extractListStr(color)]
+                        color = [float(p) for p in self._extractListStr(color.text)]
                         wall.color = color
                     wallList[wallName] = wall
 
@@ -194,6 +194,9 @@ class ConfigReader(object):
             sensorList = {}
             paramList = {}
             position = dv.findtext('position')
+            if color is not None:
+                color = [float(x) for x in cr._extractListStr(color)]
+
             if position is not None:
                 position = [float(_) for _ in cr._extractListStr(position)]
             for s in sensorSpecs:
@@ -232,7 +235,6 @@ class ConfigReader(object):
                 if taskClass is not None:
                     deviceBody.deviceTask = taskClass(deviceBody)
                 if color is not None:
-                    color = [float(x) for x in cr._extractListStr(color)]
                     deviceBody.color = color
 
         return sim

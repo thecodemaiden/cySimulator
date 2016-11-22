@@ -15,7 +15,7 @@ class Wall(PhysicalObject):
         self.faces = []
         self.pts = []
         self.calculateFaces()
-
+        self.isObstacle = True
 
     def calculateFaces(self):
         if self.isPlane:

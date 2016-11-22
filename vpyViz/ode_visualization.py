@@ -22,6 +22,8 @@ class Vpy_Visualization():
         self.simTime = 0.0
         self.fpsValues = []
 
+        self.geomLookup = {} 
+
     def updateLabel(self):
         now = time.time()
         elapsed = now - self.startTime
@@ -55,6 +57,7 @@ class Vpy_Visualization():
             if eq(o.geom, geom):
                 return o.src
 
+    
     def extractObj(self, geom, ident):
         obj = None
         # Box

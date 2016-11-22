@@ -5,7 +5,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{e1ff6596-fc9a-4fdf-9288-d3e76ce33a0e}</ProjectGuid>
     <ProjectHome />
-    <StartupFile>experimental\ode_waves.py</StartupFile>
+    <StartupFile>sim.py</StartupFile>
     <SearchPath />
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
@@ -123,6 +123,7 @@
     <Content Include="mostafa_exp.xml" />
     <Content Include="porter_hall_sim.xml" />
     <Content Include="shijia_exp.xml" />
+    <Content Include="ray_test.xml" />
     <Content Include="simple_setup.xml" />
     <Content Include="sim_setup.xml" />
   </ItemGroup>

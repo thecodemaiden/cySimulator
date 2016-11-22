@@ -6,6 +6,7 @@ from multiprocessing.pool import ThreadPool
 from collections import defaultdict
 import itertools as it
 from random import random
+import ode
 
 def fixPhase(a):
     return ( a + np.pi) % (2 * np.pi ) - np.pi
@@ -22,9 +23,6 @@ class FieldObject(object):
         """Register any readings, if necessary. fieldvalue is a FieldSphere
            Return True if this wave was handled, False otherwise (and it may show up again) """
         return False
-    def getPendingEmission(self):
-        # return (intensity, startTime, endTime)
-        pass
 
 class FieldSphere(object):
     startR = 0.00001
@@ -131,7 +129,153 @@ class FieldSphere(object):
 
         return newS
 
+class RayField(object):
+    def __init__(self, propSpeed, minIntensity=1e-10):
+        self.objects = {}
+        self.speed = float(propSpeed)
+        self.minI = minIntensity
+        self.dPhi = 5
+        self.dTheta = 5
+        self.environment = None
+        self.objectLookup = {} # TODO: empty this at intervals?
+        #self.raySpace = ode.HashSpace()
 
+    def addObject(self, o):
+        self.objects[o] = []
+        if self.environment is None:
+            self.environment = o.environment
+        elif self.environment != o.environment:
+            raise RuntimeError('Objects in diferent environments')
+
+    def removeObject(self, o):
+        self.objects.pop(o, None)
+
+    def createRaysForObject(self, origin, emissionTimes, now, space):
+        rayList = []
+
+        # for now, just generate 8 rays:
+        # radiating to cube corners
+        directions = [(1,1,1), (-1,-1,-1), (1,1,-1), (-1,-1,1), (1,-1,1), (-1,1,-1), (-1, 1,1), (1, -1, -1)]
+        for et in emissionTimes:
+            for d in directions:
+                (t,pw) = et
+                radius = self.speed*(now-t)
+                newRay = ode.GeomRay(space, radius)
+                newRay.set(origin, d)
+                newRay.intensity = pw
+                #newRay = FieldRay(radius,  origin, d, pw, space)
+                rayList.append(newRay)
+        
+        return rayList
+
+    def findSensorForObject(self, o):
+        if o not in self.objectLookup:
+            if o in self.objects:
+                self.objectLookup[o] = o
+            for obj in self.objects:
+                if obj.device == o:
+                    self.objectLookup[o] = obj
+                    break
+        return self.objectLookup.get(o)
+
+    def handleReflectionForRays(self, rayContacts):
+        # determine if we are making more reflections, and if there are intersections with objects
+        newRayList = []
+        newRaySpace = ode.HashSpace()
+        intersectionList = defaultdict(list)
+        for ray, contactList in rayContacts.items():
+            for contact in contactList:
+                pos, normal, depth, g1, g2 = contact.getContactGeomParams()
+                # is it in our object list? then we need to record this intersection
+                obj = self.environment.getObjectFromGeom(g2)
+                sensor = self.findSensorForObject(obj)
+                if sensor is not None:
+                    # don't be intersected by rays coming from us...
+                    if ray.getPosition() != sensor.getPosition():
+                        intersectionList[sensor].append(ray)
+                else:
+                    try:
+                        if obj.isObstacle:
+                            # reflect
+                            reflectDir = normal
+                            reflectFrom = pos
+                            newLength = ray.getLength() - depth
+                            newRay = ode.GeomRay(newRaySpace, newLength)
+                            newRay.set(reflectFrom, reflectDir)
+                            newRay.intensity = ray.intensity
+                            newRayList.append(newRay)
+                    except AttributeError:
+                        pass
+                    # is it an obstacle?
+
+        return newRayList, newRaySpace, intersectionList
+
+    def update(self, now):
+        allObjects = self.objects.iterkeys()
+        raySpace = ode.HashSpace()
+        allRays = []
+        worldSpace = None
+        self.currentRayContacts = defaultdict(list)
+        for o in allObjects:
+            emissionTimes = self.objects[o]
+            keptTimes = []
+ 
+            # remove emissions that fall below our minimum intensity
+            for (t, power) in emissionTimes:
+                distance = self.speed*(now-t)
+                intensity = power / (4*np.pi*distance*distance)
+                if intensity >= self.minI:
+                    keptTimes.append(t,intensity)
+
+            # add new emissions if any
+            allNew = o.getRadiatedValues()
+            for info in allNew:
+                if info is None or info[0] <= 0 or info[1] <= 0:
+                    continue
+                freq, power, t = info
+                keptTimes.append((t, power)) # we will deal with freq later when basic raycasting works
+
+            # new list of emissions is complete
+            emissionTimes = keptTimes
+
+            # create the rays
+            rayList = self.createRaysForObject(o.getPosition(), emissionTimes, now, raySpace)
+            allRays += rayList
+
+            # all objects should be in the same world, so grab the space
+            if worldSpace is None:
+                worldSpace = o.environment.space
+
+        nReflections = 2
+        allIntersections = defaultdict(list)
+        for _ in range(nReflections):
+            # perform the ray-object intersections
+            ode.collide2(raySpace, worldSpace, None, self._rayCollideCallback)
+            if len(self.currentRayContacts) > 0:
+                newRayList, raySpace, newIntersections = self.handleReflectionForRays(self.currentRayContacts)
+            else:
+                break #no reflections or intersections means we are done
+            # add in the newInterstections
+            for k,v in newIntersections.items():
+                allIntersections[k] += v
+        # ok, we're done, now to handle interference and sensing
+        for sensor, rays in allIntersections.items():
+            chosen = rays[0]
+            sensor.detectField(chosen)
+
+
+    def _rayCollideCallback(self, args, geom1, geom2):
+        contacts = ode.collide(geom1, geom2)
+        if len(contacts) > 0:
+            if isinstance(geom1, ode.GeomRay):
+                theRay = geom1
+            elif isinstance(geom2, ode.GeomRay):
+                raise RuntimeError('I didn''t think ray==geom2 was possible')
+            self.currentRayContacts[theRay]+=(contacts)
+
+    def combineValues(self, rayList):
+        return sphereList[0]
+             
 class Field(object):
     sharedThreadPool = ThreadPool(4) 
     def __init__(self, propSpeed, minI=1e-10, planeEquation=None):
@@ -221,15 +365,13 @@ class Field(object):
         for v in selected.values():
             bounceList.append(s.reflectOffSurface(*v))
         bouncy = [i for i in bounceList if i is not None]
-        return bouncy
-        
+        return bouncy       
 
     def intersectObstacles(self, obsList):
         allCombo = it.product(self._sphereGenerator(), obsList)
         reflections = it.imap(self._obstacleThreaded, allCombo)
         #reflections = self.sharedThreadPool.imap_unordered(self._obstacleThreaded, allCombo, 16)   
         return it.chain.from_iterable(reflections)
-
              
     def update(self, now):
         # TODO: modify in-place
@@ -318,9 +460,3 @@ class SemanticField(Field):
             newSphere = FieldSphere(o.getPosition(), self.speed, freq, val, t, data)
             sphereList.append(newSphere)
         return sphereList
-
-
-
-
-
-
