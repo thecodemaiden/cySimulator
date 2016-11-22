@@ -38,6 +38,8 @@ class FieldVisualiser(object):
 class PhysicalEnvironment(object):
     def __init__(self, dt):
         self.world = ode.World()
+        self.obstacleSpace = ode.HashSpace()
+        self.objectSpace = ode.HashSpace()
         self.space = ode.HashSpace()
         self.lengthScale = 1.0 
         self.massScale = 1.0 

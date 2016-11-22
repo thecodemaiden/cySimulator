@@ -137,6 +137,8 @@ class RayField(object):
         self.dPhi = 5
         self.dTheta = 5
         self.environment = None
+        # pick a default value for reception sphere; see if we can speed this up later
+        self.receptionSize = 0.1
         self.objectLookup = {} # TODO: empty this at intervals?
         #self.raySpace = ode.HashSpace()
 
@@ -150,9 +152,20 @@ class RayField(object):
     def removeObject(self, o):
         self.objects.pop(o, None)
 
-    def createRaysForObject(self, origin, emissionTimes, now, space):
-        rayList = []
+    def prepareObjectSpace(self):
+        # create a reception sphere for each receiving object
+        # attach the sensor information to the reception sphere
+        objectSpace = ode.HashSpace()
+        for o in self.objects:
+            recepSphere = ode.GeomSphere(objectSpace, self.receptionSize)
+            recepShere.obj = o
+            recepSphere.setPosition(o.getPosition())
+        return objectSpace
 
+
+    def createRaysForObject(self, o, emissionTimes, now, space):
+        rayList = []
+        origin = o.getPosition()
         # for now, just generate 8 rays:
         # radiating to cube corners
         directions = [(1,1,1), (-1,-1,-1), (1,1,-1), (-1,-1,1), (1,-1,1), (-1,1,-1), (-1, 1,1), (1, -1, -1)]
@@ -163,20 +176,11 @@ class RayField(object):
                 newRay = ode.GeomRay(space, radius)
                 newRay.set(origin, d)
                 newRay.intensity = pw
+                newRay.source = o # attach source to ray so we can eliminate multiple hits on reception spheres
                 #newRay = FieldRay(radius,  origin, d, pw, space)
                 rayList.append(newRay)
         
         return rayList
-
-    def findSensorForObject(self, o):
-        if o not in self.objectLookup:
-            if o in self.objects:
-                self.objectLookup[o] = o
-            for obj in self.objects:
-                if obj.device == o:
-                    self.objectLookup[o] = obj
-                    break
-        return self.objectLookup.get(o)
 
     def handleReflectionForRays(self, rayContacts):
         # determine if we are making more reflections, and if there are intersections with objects
@@ -239,7 +243,7 @@ class RayField(object):
             emissionTimes = keptTimes
 
             # create the rays
-            rayList = self.createRaysForObject(o.getPosition(), emissionTimes, now, raySpace)
+            rayList = self.createRaysForObject(o, emissionTimes, now, raySpace)
             allRays += rayList
 
             # all objects should be in the same world, so grab the space
