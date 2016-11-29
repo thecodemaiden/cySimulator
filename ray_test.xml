@@ -1,0 +1,22 @@
+<sim log="poop.log">
+  <field name="RF" class="RayField">
+    <param propSpeed="3e8"/>
+    <param minIntensity="1e-30"/>
+  </field>
+  <device name="Quad">
+    <count>2</count>
+    <body>bodies/quadcopter.xml</body>
+    <sensor name ="radio" class="Radio">
+      <param channel="17"/>
+      <param address="0xe7e7e7e7e1" />
+      <param rx_sens="3.98e-14" />
+      <param tx_pow="0.0000631" />
+    </sensor>
+    <program>QuadHover</program>
+    <position>0.0,-0.2, 0.0</position>
+    <color>0.7, 0.5, 0.0</color>
+  </device>
+  <layout file="layout/small_room.xml">
+    <startRegion>(-2.5, -1.05, -1.5),(2.5,1.05,1.5)</startRegion>
+  </layout>
+</sim>

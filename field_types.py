@@ -140,7 +140,6 @@ class RayField(object):
         # pick a default value for reception sphere; see if we can speed this up later
         self.receptionSize = 0.1
         self.objectLookup = {} # TODO: empty this at intervals?
-        #self.raySpace = ode.HashSpace()
 
     def addObject(self, o):
         self.objects[o] = []

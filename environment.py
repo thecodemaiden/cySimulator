@@ -40,7 +40,7 @@ class PhysicalEnvironment(object):
         self.world = ode.World()
         self.obstacleSpace = ode.HashSpace()
         self.objectSpace = ode.HashSpace()
-        self.space = ode.HashSpace()
+        self.space = None
         self.lengthScale = 1.0 
         self.massScale = 1.0 
         self.forceScale = self.massScale*self.lengthScale
@@ -66,10 +66,14 @@ class PhysicalEnvironment(object):
 
     def addObstacle(self, obs):
         self.obstacleList.append(obs)
+        for g in obs.geomList:
+            self.obstacleSpace.add(g)
 
     def addObject(self, obj):
         # assumes body is already in our world, and collision geoms are in our space
         self.objectList.append(obj)
+        for g in obj.geomList:
+            self.objectSpace.add(g)
 
     def updatePhysics(self, crude_dt):
         #update the field... slowly
