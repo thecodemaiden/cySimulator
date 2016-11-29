@@ -134,8 +134,8 @@ class RayField(object):
         self.objects = {}
         self.speed = float(propSpeed)
         self.minI = minIntensity
-        self.dPhi = 5
-        self.dTheta = 5
+        self.dPhi = 5*np.pi/180.0
+        self.dTheta = 5*np.pi/180.0
         self.environment = None
         # pick a default value for reception sphere; see if we can speed this up later
         self.receptionSize = 0.1
@@ -157,7 +157,7 @@ class RayField(object):
         objectSpace = ode.HashSpace()
         for o in self.objects:
             recepSphere = ode.GeomSphere(objectSpace, self.receptionSize)
-            recepShere.obj = o
+            recepSphere.obj = o
             recepSphere.setPosition(o.getPosition())
         return objectSpace
 
@@ -181,43 +181,56 @@ class RayField(object):
         
         return rayList
 
+    def findSensorForObject(self, o):
+        if o not in self.objectLookup:
+            for sensor in self.objects:
+                if sensor.device == o:
+                    self.objectLookup[o] = sensor
+                    break
+        return self.objectLookup.get(o)
+
+    def handleRayObjectIntersection(self, rayContacts):
+        intersectionList = defaultdict(list)
+        for ray, contactList in rayContacts.items():
+            for contact in contactList:
+                pos, normal, depth, g1, g2 = contact.getContactGeomParams()
+                sensor = g2.obj
+                if g1.source != sensor:
+                    intersectionList[sensor].append(g1)
+        return intersectionList
+        
+
     def handleReflectionForRays(self, rayContacts):
         # determine if we are making more reflections, and if there are intersections with objects
         newRayList = []
         newRaySpace = ode.HashSpace()
-        intersectionList = defaultdict(list)
         for ray, contactList in rayContacts.items():
             for contact in contactList:
                 pos, normal, depth, g1, g2 = contact.getContactGeomParams()
                 # is it in our object list? then we need to record this intersection
                 obj = self.environment.getObjectFromGeom(g2)
-                sensor = self.findSensorForObject(obj)
-                if sensor is not None:
-                    # don't be intersected by rays coming from us...
-                    if ray.getPosition() != sensor.getPosition():
-                        intersectionList[sensor].append(ray)
-                else:
-                    try:
-                        if obj.isObstacle:
-                            # reflect
-                            reflectDir = normal
-                            reflectFrom = pos
-                            newLength = ray.getLength() - depth
-                            newRay = ode.GeomRay(newRaySpace, newLength)
-                            newRay.set(reflectFrom, reflectDir)
-                            newRay.intensity = ray.intensity
-                            newRayList.append(newRay)
-                    except AttributeError:
-                        pass
-                    # is it an obstacle?
+                try:
+                    if obj.isObstacle:
+                        # reflect
+                        reflectDir = normal
+                        reflectFrom = pos
+                        newLength = ray.getLength() - depth
+                        newRay = ode.GeomRay(newRaySpace, newLength)
+                        newRay.set(reflectFrom, reflectDir)
+                        newRay.intensity = ray.intensity
+                        newRay.source = ray.source
+                        newRayList.append(newRay)
 
-        return newRayList, newRaySpace, intersectionList
+                except AttributeError:
+                    pass
+
+        return newRayList, newRaySpace
 
     def update(self, now):
         allObjects = self.objects.iterkeys()
         raySpace = ode.HashSpace()
         allRays = []
-        worldSpace = None
+        worldSpace = self.environment.obstacleSpace
         self.currentRayContacts = defaultdict(list)
         for o in allObjects:
             emissionTimes = self.objects[o]
@@ -245,22 +258,25 @@ class RayField(object):
             rayList = self.createRaysForObject(o, emissionTimes, now, raySpace)
             allRays += rayList
 
-            # all objects should be in the same world, so grab the space
-            if worldSpace is None:
-                worldSpace = o.environment.space
-
+         
         nReflections = 2
+        sensorSpace = self.prepareObjectSpace()
         allIntersections = defaultdict(list)
         for _ in range(nReflections):
-            # perform the ray-object intersections
+            # okay, first collide with reception spheres
+            ode.collide2(raySpace, sensorSpace, None, self._rayCollideCallback)
+            if len(self.currentRayContacts) > 0:
+                newIntersections = self.handleRayObjectIntersection(self.currentRayContacts)
+                # add in the newInterstections
+                for k,v in newIntersections.items():
+                    allIntersections[k] += v
+
+            self.currentRayContacts.clear()
+            # perform the ray-obstacle intersections
             ode.collide2(raySpace, worldSpace, None, self._rayCollideCallback)
             if len(self.currentRayContacts) > 0:
-                newRayList, raySpace, newIntersections = self.handleReflectionForRays(self.currentRayContacts)
-            else:
-                break #no reflections or intersections means we are done
-            # add in the newInterstections
-            for k,v in newIntersections.items():
-                allIntersections[k] += v
+                newRayList, raySpace = self.handleReflectionForRays(self.currentRayContacts)
+            self.currentRayContacts.clear()
         # ok, we're done, now to handle interference and sensing
         for sensor, rays in allIntersections.items():
             chosen = rays[0]

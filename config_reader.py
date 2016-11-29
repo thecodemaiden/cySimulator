@@ -177,7 +177,7 @@ class ConfigReader(object):
 
         walls = cr.readLayoutFile(layoutFile)
         for w in walls:
-            sim.addObject(w)
+            #sim.addObject(w)
             sim.addObstacle(w)
 
         # now add the devices

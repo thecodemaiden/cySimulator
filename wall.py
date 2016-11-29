@@ -30,7 +30,8 @@ class Wall(PhysicalObject):
             self.faces.append((2, self.centerPos[2]-self.dim[2]/2))
 
     def __repr__(self):
-        return str((self.dim, self.centerPos))
+        fmt = "Obstacle: Pos{} Size{}"
+        return fmt.format(self.centerPos, self.dim)
 
     def makePhysicsBody(self):
         """ There is no actual physics body, just an immovable collision object """

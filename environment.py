@@ -40,6 +40,11 @@ class PhysicalEnvironment(object):
         self.world = ode.World()
         self.obstacleSpace = ode.HashSpace()
         self.objectSpace = ode.HashSpace()
+        self.overSpace = ode.SimpleSpace()
+
+        self.overSpace.add(self.obstacleSpace)
+        self.overSpace.add(self.objectSpace)
+
         self.space = None
         self.lengthScale = 1.0 
         self.massScale = 1.0 
@@ -91,7 +96,7 @@ class PhysicalEnvironment(object):
                 except AttributeError:
                     pass # maybe some things are pure computation?
  
-            self.space.collide(None, self.near_callback)
+            self.overSpace.collide(None, self.near_callback)
             self.world.quickStep(self.dt)
             self.contactGroup.empty()
 
@@ -105,15 +110,24 @@ class PhysicalEnvironment(object):
 
 
     def near_callback(self, args, geom1, geom2):
-        # Check if the objects do collide
-        contacts = ode.collide(geom1, geom2)
+        # recurse for the object and obstacle spaces
+        if (geom1.isSpace() or geom2.isSpace()):
+            ode.collide2(geom1, geom2, args, self.near_callback)
+            
+            if geom1.isSpace():
+                geom1.collide(args, self.near_callback)
+            if geom2.isSpace():
+                geom2.collide(args, self.near_callback)
+        else:
+            # Check if the (non-space) objects do collide
+            contacts = ode.collide(geom1, geom2)
 
-        # Create contact joints
-        for c in contacts:
-            c.setBounce(0.7)
-            c.setMu(500)
-            j = ode.ContactJoint(self.world, self.contactGroup, c)
-            j.attach(geom1.getBody(), geom2.getBody())
+            # Create contact joints
+            for c in contacts:
+                c.setBounce(0.7)
+                c.setMu(500)
+                j = ode.ContactJoint(self.world, self.contactGroup, c)
+                j.attach(geom1.getBody(), geom2.getBody())
 
 class ComputeEnvironment(object):
     def __init__(self, dt):
@@ -166,11 +180,14 @@ class SimulationManager(PhysicalEnvironment, ComputeEnvironment):
                 try:
                     if geom in o.geomList:
                         self.geomLookup[geom] = o
+                        break
                 except AttributeError:
                     pass
+            for o in self.obstacleList:
                 try:
-                    if o.geom == geom:
+                    if geom in o.geomList:
                         self.geomLookup[geom] = o
+                        break
                 except AttributeError:
                     pass
 
