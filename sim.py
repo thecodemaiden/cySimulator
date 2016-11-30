@@ -16,6 +16,7 @@ def runSimulationFile(filename, withViz, timeout=None):
         scene.autoscale = False
         scene.autocenter =False
         scene.center = (0,-0.7, 0)
+        scene.scale = (2,2,2)
 
     sim.start()
     print('Simulation start')

@@ -8,6 +8,9 @@ import itertools as it
 from random import random
 import ode
 
+import visual as v
+from hammersley import hammersley_hemi
+
 def fixPhase(a):
     return ( a + np.pi) % (2 * np.pi ) - np.pi
 
@@ -130,16 +133,18 @@ class FieldSphere(object):
         return newS
 
 class RayField(object):
+    DEBUG_DRAW = False
     def __init__(self, propSpeed, minIntensity=1e-10):
         self.objects = {}
         self.speed = float(propSpeed)
         self.minI = minIntensity
-        self.dPhi = 5*np.pi/180.0
-        self.dTheta = 5*np.pi/180.0
+        self.rayDirections = hammersley_hemi(64)
         self.environment = None
         # pick a default value for reception sphere; see if we can speed this up later
         self.receptionSize = 0.1
         self.objectLookup = {} # TODO: empty this at intervals?
+        if self.DEBUG_DRAW:
+            self.tempRays = []
 
     def addObject(self, o):
         self.objects[o] = []
@@ -155,10 +160,13 @@ class RayField(object):
         # create a reception sphere for each receiving object
         # attach the sensor information to the reception sphere
         objectSpace = ode.HashSpace()
+        objSpheres = []
         for o in self.objects:
             recepSphere = ode.GeomSphere(objectSpace, self.receptionSize)
             recepSphere.obj = o
             recepSphere.setPosition(o.getPosition())
+            objSpheres.append(recepSphere)
+        objectSpace.refs = objSpheres
         return objectSpace
 
 
@@ -167,11 +175,22 @@ class RayField(object):
         origin = o.getPosition()
         # for now, just generate 8 rays:
         # radiating to cube corners
-        directions = [(1,1,1), (-1,-1,-1), (1,1,-1), (-1,-1,1), (1,-1,1), (-1,1,-1), (-1, 1,1), (1, -1, -1)]
+        # generate the cartesian vectors for ray directions
+        #nThetas = int(2*np.pi/self.dTheta)
+        #nPhis = int(np.pi/self.dPhi)
+
+        #directions = []
+        #for i in range(nThetas):
+        #    for j in range(nPhis):
+        #        x = np.cos(i*self.dTheta)*np.sin(j*self.dPhi)
+        #        y = np.sin(i*self.dTheta)*np.sin(j*self.dPhi)
+        #        z = np.cos(j*self.dPhi)
+        #        directions.append((x,y,z))
+        directions = self.rayDirections
         for et in emissionTimes:
+            (t,pw) = et
+            radius = self.speed*(now-t)
             for d in directions:
-                (t,pw) = et
-                radius = self.speed*(now-t)
                 newRay = ode.GeomRay(space, radius)
                 newRay.set(origin, d)
                 newRay.intensity = pw
@@ -180,6 +199,16 @@ class RayField(object):
                 rayList.append(newRay)
         
         return rayList
+
+    def drawRays(self, rayList):
+        screen = v.display.get_selected()
+        for r in rayList:
+            p,d = r.get()
+            length = 2#r.getLength()
+            axis = np.multiply(d, length)
+            vRay = v.arrow(pos=p, axis=axis, shaftwidth=0.01)
+            self.tempRays.append(vRay)
+        v.rate(1)
 
     def findSensorForObject(self, o):
         if o not in self.objectLookup:
@@ -212,7 +241,11 @@ class RayField(object):
                 try:
                     if obj.isObstacle:
                         # reflect
-                        reflectDir = normal
+                        rayDir =  g1.get()[1]
+                        rayDir = np.divide(rayDir, np.linalg.norm(rayDir))
+                        normal = np.divide(normal, np.linalg.norm(rayDir))
+                        #refl = incident - 2*normal*(normal . incident)
+                        reflectDir = rayDir - 2*normal*np.dot(rayDir, normal)
                         reflectFrom = pos
                         newLength = ray.getLength() - depth
                         newRay = ode.GeomRay(newRaySpace, newLength)
@@ -258,11 +291,18 @@ class RayField(object):
             rayList = self.createRaysForObject(o, emissionTimes, now, raySpace)
             allRays += rayList
 
+        if self.DEBUG_DRAW and len(allRays) > 0:
+           self.drawRays(allRays)
          
-        nReflections = 2
+        nReflections = 5
         sensorSpace = self.prepareObjectSpace()
         allIntersections = defaultdict(list)
         for _ in range(nReflections):
+            if self.DEBUG_DRAW:
+                for r in self.tempRays:
+                    r.visible = False
+                    del r
+                self.tempRays = []
             # okay, first collide with reception spheres
             ode.collide2(raySpace, sensorSpace, None, self._rayCollideCallback)
             if len(self.currentRayContacts) > 0:
@@ -276,11 +316,15 @@ class RayField(object):
             ode.collide2(raySpace, worldSpace, None, self._rayCollideCallback)
             if len(self.currentRayContacts) > 0:
                 newRayList, raySpace = self.handleReflectionForRays(self.currentRayContacts)
+                if self.DEBUG_DRAW:
+                    self.drawRays(newRayList)
+
             self.currentRayContacts.clear()
         # ok, we're done, now to handle interference and sensing
         for sensor, rays in allIntersections.items():
             chosen = rays[0]
             sensor.detectField(chosen)
+
 
 
     def _rayCollideCallback(self, args, geom1, geom2):

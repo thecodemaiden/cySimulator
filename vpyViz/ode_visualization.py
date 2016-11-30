@@ -36,11 +36,18 @@ class Vpy_Visualization():
             self.fpsValues.append(self.lastFPS)
         self.infoLabel.text = labelFormat.format(elapsed, self.simTime, self.lastFPS)
 
-    def create(self):
-        space = self.physEnv.space
+    def addGeomsFromSpace(self, space):
         for i in range(space.getNumGeoms()):
             geom = space.getGeom(i)
-            self.addGeom(geom)
+            if geom.isSpace():
+                self.addGeomsFromSpace(geom)
+            else:
+                self.addGeom(geom)
+
+    def create(self):
+        space = self.physEnv.overSpace
+        self.addGeomsFromSpace(space)
+        
 
     def update(self, dt):
         self.canvas.select()
@@ -50,7 +57,7 @@ class Vpy_Visualization():
         self.simFrames +=1 
         self.simTime += dt
         self.updateLabel()
-        v.rate(2000)
+        v.rate(30)
 
     def getGraphics(self, geom):
         for o in self.obj:

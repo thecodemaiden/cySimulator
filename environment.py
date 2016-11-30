@@ -164,7 +164,8 @@ class SimulationManager(PhysicalEnvironment, ComputeEnvironment):
     def start(self):
         if self.visualizer is not None:
             self.visualizer.create()
-            for o in self.objectList:
+            allThings = self.objectList+self.obstacleList
+            for o in allThings:
                 o.onVisualizationStart()
         self.time = 0
 

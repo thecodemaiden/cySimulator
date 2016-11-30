@@ -41,6 +41,7 @@
     <Compile Include="field_types.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="hammersley.py" />
     <Compile Include="heatmap.py">
       <SubType>Code</SubType>
     </Compile>
