@@ -7,6 +7,8 @@ import numpy as np
 
 from time import time
 
+from keyboard_handler import KeyboardHandler
+
 class FieldVisualiser(object):
     import visual as v
     def __init__(self):
@@ -178,25 +180,23 @@ class SimulationManager(PhysicalEnvironment, ComputeEnvironment):
             light1.direction= (0.88, -0.22, 0.44)
             #self.visualizer.canvas.mouse.getclick()
         else:
-            import msvcrt
             print 'Hit ESC to end'
             # TODO:  put keyboard input on separate thread...
         try:
-            while True:
-                self.update(self.dt)
-                if self.visualizer is not None:
-                    self.visualizer.update(self.dt)
-                else:
-                    if msvcrt.kbhit():
-                        chr = msvcrt.getche()
+            with KeyboardHandler() as kbd:
+                while True:
+                    self.update(self.dt)
+                    if self.visualizer is not None:
+                        self.visualizer.update(self.dt)
+                    else:
+                        chr = kbd.get_data()
                         if ord(chr) == 27:
                             break
                         elif chr == 't':
                             print self.time
-                #if time()-startTime >= timeout:
-                if timeout is not None and self.time-startTime >= timeout:
-                    break
-              
+                    #if time()-startTime >= timeout:
+                    if timeout is not None and self.time-startTime >= timeout:
+                        break
         except KeyboardInterrupt:
             pass
         finally:
