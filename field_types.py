@@ -44,7 +44,7 @@ class FieldSphere(object):
         self.original = None
         self.destroyFlag = False
         self.phaseShift = 0
-        self.onSurface = [0,0,0,0] # [a, b, c, d] for ax+by+cz = d
+        self.onSurface = [0,0,0,0] # [a, b, c, d] for 3-d plane equation ax+by+cz = d
         self.reflect_limits = [[-np.inf, np.inf], [-np.inf, np.inf], [-np.inf, np.inf]] 
 
 

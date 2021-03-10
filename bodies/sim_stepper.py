@@ -5,20 +5,13 @@ from random import gauss
 from bisect import bisect_left
 from sensors import Geophone
 
-class FakeStepper(Device, FieldObject):
+class SimStepper(Device, FieldObject):
     """An object with no body that generates fake footstep vibrations"""
     def makePhysicsBody(self):
         physicsWorld = self.environment.world
-        space = self.environment.space
 
         mainBody = ode.Body(physicsWorld)
         mainBody.setKinematic()
-
-        #geom = ode.GeomSphere(self.environment.space, 0.1)
-        #geom.setBody(mainBody)
-        #geom.setCategoryBits(8)
-        #geom.setCollideBits(0)
-        #self.geomList = [geom]
        
         self.physicsBody = mainBody
         self.environment.addFieldObject('Vibration', self)

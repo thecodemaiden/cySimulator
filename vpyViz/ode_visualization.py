@@ -1,6 +1,6 @@
 from ode_objects import *
 import ode
-import visual as v
+import vpython as v
 import visual.controls as vc
 from operator import eq
 import logging

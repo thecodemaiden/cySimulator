@@ -1,1 +1,0 @@
-from quad import Quadcopter

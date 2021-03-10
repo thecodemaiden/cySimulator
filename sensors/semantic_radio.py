@@ -23,6 +23,7 @@ class SemanticRadio(FieldObject):
         add = params.get('address')
         if add == None:
             # make up an address, hope it doesn't collide
+            # TODO: use a UUID generator instead
             add = randint(0xb000000000L, 0xfefefefefeL)
         else:
             add = long(add, 16)

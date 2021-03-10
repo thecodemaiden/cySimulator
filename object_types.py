@@ -12,6 +12,22 @@ class PhysicalObject(_Base):
         self.logger = None
         self.color = (1.0,1.0,1.0)
         self.geomList = []
+        self.makePhysicsBody()
+        self.attachOrientationJoint()
+
+    def attachOrientationJoint(self):
+        # please leave this alone!! It reports ground truth orientation of the physical object
+        self.orientationMotor = AMotor(self.environment.world)
+        self.orientationMotor.setNumAxes(3)
+        self.orientationMotor.setMode(AMotorEuler)
+        self.orientationMotor.attach(self.physicsBody, None)
+        self.orientationMotor.setAxis(0, 1, [1, 0, 0])
+        self.orientationMotor.setAxis(2, 2, [0, 0, 1])
+
+    def makePhysicsBody(self):
+        self.physicsBody = None # MUST OVERRIDE
+        raise RuntimeError('Physical objects must define a physical body!')
+
 
     def updatePhysics(self, dt):
         pass
@@ -49,21 +65,6 @@ class Device(ComputationalObject, PhysicalObject):
         self.name = "Device"
         self.time = 0
         self.applyParameters(params)
-        self.makePhysicsBody()
-        self.attachOrientationJoint()
-
-    def makePhysicsBody(self):
-        self.physicsBody = None # MUST OVERRIDE
-        raise RuntimeError('New devices must define a physical body!')
-
-    def attachOrientationJoint(self):
-        # please leave this alone!!
-        self.orientationMotor = AMotor(self.environment.world)
-        self.orientationMotor.setNumAxes(3)
-        self.orientationMotor.setMode(AMotorEuler)
-        self.orientationMotor.attach(self.physicsBody, None)
-        self.orientationMotor.setAxis(0, 1, [1, 0, 0])
-        self.orientationMotor.setAxis(2, 2, [0, 0, 1])
 
     def applyParameters(self, params):
         pass

@@ -1,13 +1,7 @@
 import numpy as np
 class Heatmap(object):
     """description of class"""
-    heatMapValues = np.array( [#[36,    0,    0],
-                                #[73,    0,    0],
-                                #[109,    0,    0],
-                                #[146,    0,    0],
-                                #[182,    0,    0],
-                                #[219,    0,    0],
-                                [255,    0,    0],
+    heatMapValues = np.array( [[255,    0,    0],
                                 [255,   36,    0],
                                 [255,   73,    0],
                                 [255,  109,    0],

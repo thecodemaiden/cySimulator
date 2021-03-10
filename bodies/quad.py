@@ -140,7 +140,6 @@ class Quadcopter(Device):
         y = arcsin(-R[6]);            #theta
         p   = arctan2(R[3], R[0]);    #psi
 
-        theta = array([r,p,y])
         total = self.totalMass*-self.environment.world.getGravity()[1]*self.environment.forceScale
         total = total/self.propellerThrustCoefficient
         total = total/(cos(r)*cos(p))

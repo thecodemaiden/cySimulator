@@ -19,8 +19,6 @@ class FieldVisualiser(object):
     def drawFieldState(self, field):
         if self.visualWindow is None:
             self.visualWindow = self.v.canvas(title='Field visualization', width=1024, height=768)
-            #self.visualWindow.autocenter=False
-            #self.visualWindow.scale = (0.05,0.05,0.05)
         self.visualWindow.select()
         for s in self.spheres:
             s.visible = False

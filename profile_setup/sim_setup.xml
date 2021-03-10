@@ -11,9 +11,9 @@
     <count>25</count>
     <body>bodies/quadcopter.xml</body>
     <sensor name ="acc" class="Accelerometer"/>
-     <!--<sensor name ="radio" class="SemanticRadio"> 
+    <sensor name ="radio" class="SemanticRadio"> 
       <param channel="17"/>
-    </sensor> -->
+    </sensor>
     <program>QuadHover</program>
   </device>
    <layout file="layout/example_layout.xml">

@@ -1,4 +1,5 @@
-from configparser import SafeConfigParser
+#XXX
+from configparser import ConfigParser as SafeConfigParser
 from wall import Wall
 from collections import defaultdict
 import xml.etree.ElementTree as etree

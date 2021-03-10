@@ -1,6 +1,6 @@
 <sim log="shijia_exp.log" sampleRate="25000">
   <field name="Vibration" class="VectorField">
-    <param propSpeed="350"/>
+    <param propSpeed="1000"/>
     <param minIntensity="1e-5"/>
   </field>
   <device name="Geophone1">

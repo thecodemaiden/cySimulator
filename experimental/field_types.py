@@ -46,7 +46,6 @@ class FieldSphere(object):
         self.original = None
         self.destroyFlag = False
         self.phaseShift = 0
-        self.onSurface = [0,0,0,0] # [a, b, c, d] for ax+by+cz = d
         self.reflect_limits = [[-np.inf, np.inf], [-np.inf, np.inf], [-np.inf, np.inf]] 
 
 
@@ -148,7 +147,7 @@ class Field(object):
         self.objects.pop(o, None)
 
     def _sphereGenerator(self):
-        for sphereList in self.objects.itervalues():
+        for sphereList in self.objects.values():
             for s in sphereList:
                 yield s
 
@@ -185,8 +184,8 @@ class Field(object):
         repeatInfo = it.repeat(objInfoTable)
         origSpheresList = self._sphereGenerator()
         allSpheresList = it.chain(origSpheresList, extraSpheres)
-        together = it.izip(allSpheresList, repeatInfo)
-        allIntersections = it.imap(self._intersectionThreaded, together)
+        together = it.zip(allSpheresList, repeatInfo)
+        allIntersections = it.map(self._intersectionThreaded, together)
         #allIntersections = self.sharedThreadPool.imap_unordered(self._intersectionThreaded, together, 16)
         # now take the collisions and order them by object
         intersectionsByObject = defaultdict(list)
@@ -226,14 +225,14 @@ class Field(object):
 
     def intersectObstacles(self, obsList):
         allCombo = it.product(self._sphereGenerator(), obsList)
-        reflections = it.imap(self._obstacleThreaded, allCombo)
+        reflections = it.map(self._obstacleThreaded, allCombo)
         #reflections = self.sharedThreadPool.imap_unordered(self._obstacleThreaded, allCombo, 16)   
         return it.chain.from_iterable(reflections)
 
              
     def update(self, now):
         # TODO: modify in-place
-        allObjects = self.objects.iterkeys()
+        allObjects = self.objects.keys()
         for o in allObjects:
             sphereList = self.objects[o]
             newSpheres = self.spawnSphereFromObject(o) # TODO: check frequency!
@@ -243,7 +242,7 @@ class Field(object):
             for s in sphereList:
                 s.prepareToDiscard(now)
         self.performIntersections(now)
-        allObjects = self.objects.iterkeys()
+        allObjects = self.objects.keys()
         for o in allObjects:
             toRemove = []
             sphereList = self.objects[o]

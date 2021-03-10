@@ -1,4 +1,4 @@
-<sim log="sim_poop.log" sampleRate="50">
+<sim log="sim_porter_semantic.log" sampleRate="50">
   <field name="RF_Semantic" class="SemanticField">
     <param propSpeed="3e8"/>
     <param minIntensity="1e-30"/>
@@ -13,7 +13,7 @@
       <param tx_pow="0.0000631" />
     </sensor>
     <program>RequestRssi</program>
-    <position>5.7,-0.9, -.5</position>
+    <position>5.7,-0.9, 0.0</position>
   </device>
   <device name="Quad1">
     <count>1</count>
@@ -61,18 +61,6 @@
     </sensor>
     <program>SendRssi</program>
     <position>2.085,-0.9, 0.015</position>
-    <color>1.0, 0.4, 0.0</color>
-  </device>
- <device name="Quad5">
-    <count>1</count>
-    <body>bodies/quadcopter.xml</body>
-    <sensor name ="acc" class="Accelerometer"/>
-    <sensor name ="radio" class="SemanticRadio">
-      <param channel="80"/>
-      <param address="0xe7e7e7e7e3" />
-    </sensor>
-    <program>SendRssi</program>
-    <position>2.085,-0.9, 2.285</position>
     <color>1.0, 0.4, 0.0</color>
   </device>
    <layout file="layout/porter_hall.xml">

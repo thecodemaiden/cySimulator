@@ -1,5 +1,5 @@
 
-import visual as v 
+import vpython as v 
 import numpy
 
 class VPRotation():

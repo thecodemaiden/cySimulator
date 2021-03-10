@@ -44,7 +44,7 @@ class FieldShell(object):
 
 if __name__ == '__main__':
     #space = ode.QuadTreeSpace((0,0,0), (5,5,5), 4)
-    import visual as v
+    import vpython as v
     space = ode.HashSpace()
     t = 3
     wave1 = FieldShell((0,0,0), 1, 20, 0.5, 0.25, 0.5, space)
@@ -53,7 +53,7 @@ if __name__ == '__main__':
     wave1.update(t)
     wave2.update(t)
 
-    scene = v.display(title='Shell sim', width=640, height=480, background=(0.8,0.8,0.8))
+    scene = v.canvas(title='Shell sim', width=640, height=480, background=(0.8,0.8,0.8))
 
     sphere11 = v.sphere(pos=wave1.center, color=(1,0,0), opacity=0.3, display=scene)
     sphere12 = v.sphere(pos=wave1.center, color=(0.5,0,1), opacity=0.7, display=scene)

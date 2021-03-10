@@ -12,7 +12,6 @@ class GenericDevice(Device):
         bodyMass = ode.Mass()
         totalMass = 0.075
 
-
         bodyMass.setBoxTotal(totalMass, *self.dims)
 
         geom = ode.GeomBox(space, self.dims)

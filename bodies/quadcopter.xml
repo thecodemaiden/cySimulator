@@ -4,7 +4,7 @@
   <param name="airFrictionCoefficient" value="0.25" />
   <param name="centralBodyRadius" value="0.05" />
   <param name="centralBodyHeight" value="0.01" />
-  <param name="armLength" value="0.1" />
+  <param name="armLength" value="0.074" />
   <param name="motorHeight" value="0.012" />
   <param name="motorRadius" value="0.05" />
   <param name="motorMass" value="0.01" />
