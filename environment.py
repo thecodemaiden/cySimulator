@@ -10,7 +10,7 @@ from time import time
 from keyboard_handler import KeyboardHandler
 
 class FieldVisualiser(object):
-    import visual as v
+    import vpython as v
     def __init__(self):
         self.visualWindow = None
         self.spheres = []
@@ -18,7 +18,7 @@ class FieldVisualiser(object):
         
     def drawFieldState(self, field):
         if self.visualWindow is None:
-            self.visualWindow = self.v.display(title='Field visualization', width=1024, height=768)
+            self.visualWindow = self.v.canvas(title='Field visualization', width=1024, height=768)
             #self.visualWindow.autocenter=False
             #self.visualWindow.scale = (0.05,0.05,0.05)
         self.visualWindow.select()
@@ -180,7 +180,7 @@ class SimulationManager(PhysicalEnvironment, ComputeEnvironment):
             light1.direction= (0.88, -0.22, 0.44)
             #self.visualizer.canvas.mouse.getclick()
         else:
-            print 'Hit ESC to end'
+            print ('Hit ESC to end')
             # TODO:  put keyboard input on separate thread...
         try:
             with KeyboardHandler() as kbd:
@@ -193,7 +193,7 @@ class SimulationManager(PhysicalEnvironment, ComputeEnvironment):
                         if ord(chr) == 27:
                             break
                         elif chr == 't':
-                            print self.time
+                            print (self.time)
                     #if time()-startTime >= timeout:
                     if timeout is not None and self.time-startTime >= timeout:
                         break

@@ -1,4 +1,4 @@
-from ConfigParser import SafeConfigParser
+from configparser import SafeConfigParser
 from wall import Wall
 from collections import defaultdict
 import xml.etree.ElementTree as etree

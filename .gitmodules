@@ -1,0 +1,3 @@
+[submodule "pyode"]
+	path = Py3ODE
+	url = https://github.com/filipeabperes/Py3ODE

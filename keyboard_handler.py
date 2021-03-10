@@ -34,4 +34,4 @@ if __name__=='__main__':
     from time import sleep
     with KeyboardHandler() as k:
         sleep(5)
-        print k.get_data()
+        print (k.get_data())
