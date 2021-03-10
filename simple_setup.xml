@@ -8,7 +8,7 @@
     <body>bodies/quadcopter.xml</body>
     <sensor name ="radio" class="SemanticRadio">
       <param channel="17"/>
-      <param address="0xe7e7e7e7e1" />
+      <param address="0xe7e7e7e7ea" />
       <param rx_sens="3.98e-14" />
       <param tx_pow="0.0000631" />
     </sensor>

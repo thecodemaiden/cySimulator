@@ -62,7 +62,6 @@ class Wall(PhysicalObject):
         if hole_size[2] == 'z':
             firstCutAxis = 0
             secondCutAxis = 1
-            thicknessAxis = 2
 
         # first cut along y axis at one x-side of the hole
         minFirstAxis1 =  scaledWallCenter[firstCutAxis] - scaledWallSize[firstCutAxis]/2 
